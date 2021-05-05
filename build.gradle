@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+    id "com.diffplug.spotless" version "5.12.1"
+    id 'groovy' // for tests
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(16)
+    }
+}
+
+spotless {
+    java {
+        importOrder()
+        removeUnusedImports()
+        prettier()
+    }
+    typescript {
+        target 'client/src/**/*.ts'
+        prettier()
+    }
+}
