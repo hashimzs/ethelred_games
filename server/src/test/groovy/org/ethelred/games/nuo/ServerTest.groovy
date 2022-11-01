@@ -1,5 +1,11 @@
 package org.ethelred.games.nuo
 
+import com.agorapulse.gru.Client
+import com.agorapulse.gru.Gru
+import com.agorapulse.gru.GruContext
+import com.agorapulse.gru.Squad
+import com.agorapulse.gru.http.Http
+import com.agorapulse.gru.minions.AbstractMinion
 import groovy.json.JsonSlurper
 import org.ethelred.games.server.Main
 import picocli.CommandLine
