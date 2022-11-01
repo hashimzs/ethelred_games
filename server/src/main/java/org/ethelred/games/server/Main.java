@@ -78,36 +78,36 @@ public class Main implements Runnable
     {
         server.routes(() -> {
             before(ctx -> {
-                if (ctx.cookieStore(PLAYER_ID_KEY) == null)
+                if (ctx.cookieStore().get(PLAYER_ID_KEY) == null)
                 {
-                    ctx.cookieStore(PLAYER_ID_KEY, engine.newId());
+                    ctx.cookieStore().set(PLAYER_ID_KEY, engine.newId());
                 }
-                ctx.attribute(PLAYER_ID_KEY, ctx.cookieStore(PLAYER_ID_KEY));
+                ctx.attribute(PLAYER_ID_KEY, ctx.cookieStore().get(PLAYER_ID_KEY));
             });
             path("api", () -> {
                 get("games", ctx -> ctx.json(engine.gameTypes()));
-                post(":game", ctx -> {
+                post("{game}", ctx -> {
                     long playerId = getPlayerId(ctx);
                     String gameType = ctx.pathParam("game");
                     ctx.json(engine.createGame(playerId, gameType));
                 });
-                put(":game/:gameId", ctx -> {
+                put("{game}/{gameId}", ctx -> {
                     long playerId = getPlayerId(ctx);
-                    long gameId = ctx.pathParam("gameId", Long.class).get();
+                    long gameId = ctx.pathParamAsClass("gameId", Long.class).get();
                     ctx.json(engine.joinGame(playerId, gameId));
                 });
-                ws(":game/:gameId", ws -> {
+                ws("{game}/{gameId}", ws -> {
                     ws.onConnect(ctx -> {
                         var channel = new ServerChannel(
                                 getPlayerId(ctx),
-                                ctx.pathParam("gameId", Long.class).get(),
+                                ctx.pathParamAsClass("gameId", Long.class).get(),
                                 ctx.pathParam("game"));
                         channelToWs.put(channel, ctx);
                     });
                     ws.onMessage(ctx -> {
                         var channel = new ServerChannel(
                                 getPlayerId(ctx),
-                                ctx.pathParam("gameId", Long.class).get(),
+                                ctx.pathParamAsClass("gameId", Long.class).get(),
                                 ctx.pathParam("game"));
                         engine.message(channel, ctx.message());
                     });

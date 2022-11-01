@@ -1,6 +1,6 @@
 package org.ethelred.games.server;
 
-import io.javalin.core.JavalinConfig;
+import io.javalin.config.JavalinConfig;
 
 public interface Profile
 {
