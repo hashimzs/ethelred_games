@@ -1,12 +1,17 @@
 package org.ethelred.games.server;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.websocket.WsContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ethelred.games.core.Action;
 import org.ethelred.games.core.Engine;
+import org.ethelred.games.core.Game;
+import org.ethelred.games.core.InvalidActionException;
 import org.ethelred.games.nuo.NuoGameDefinition;
 import org.jetbrains.annotations.Nullable;
 import picocli.CommandLine;
@@ -41,6 +46,8 @@ public class Main implements Runnable
 
     private Javalin server;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Override
     public void run()
     {
@@ -60,13 +67,13 @@ public class Main implements Runnable
         server.stop();
     }
 
-    private void onMessage(Engine.Channel channel, String message)
+    private void onMessage(Engine.Channel channel, Game.PlayerView message)
     {
         var serverChannel = new ServerChannel(channel);
         var ctx = channelToWs.get(serverChannel);
         if (ctx != null)
         {
-            ctx.send(message);
+            ctx.send(_writePlayerView(message));
         }
         else
         {
@@ -109,7 +116,7 @@ public class Main implements Runnable
                                 getPlayerId(ctx),
                                 ctx.pathParamAsClass("gameId", Long.class).get(),
                                 ctx.pathParam("game"));
-                        engine.message(channel, ctx.message());
+                        engine.message(channel, _parseAction(ctx.message()));
                     });
                 });
             });
@@ -131,6 +138,30 @@ public class Main implements Runnable
         public ServerChannel(Engine.Channel other)
         {
             this(other.playerId(), other.gameId(), other.gameType());
+        }
+    }
+
+    private String _writePlayerView(Game.PlayerView pv)
+    {
+        try
+        {
+            return objectMapper.writeValueAsString(pv);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Action _parseAction(String message)
+    {
+        try
+        {
+            return objectMapper.readValue(message, Action.class);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new InvalidActionException();
         }
     }
 }

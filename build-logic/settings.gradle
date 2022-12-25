@@ -1,0 +1,8 @@
+rootProject.name = 'ethelred_games-build-logic'
+dependencyResolutionManagement {
+    versionCatalogs {
+        libs {
+            from(files("../gradle/libs.versions.toml"))
+        }
+    }
+}

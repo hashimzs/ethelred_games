@@ -2,8 +2,7 @@ package org.ethelred.games.server;
 
 import dagger.Component;
 import org.ethelred.games.core.Engine;
-import org.ethelred.games.core.EngineModule;
-import org.ethelred.games.nuo.NuoGameDefinition;
+import org.ethelred.games.server.bind.EngineModule;
 
 import javax.inject.Singleton;
 
