@@ -2,9 +2,12 @@ package org.ethelred.games.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.annotations.VisibleForTesting;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 import io.javalin.websocket.WsContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import picocli.CommandLine;
 import static io.javalin.apibuilder.ApiBuilder.*;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -43,10 +47,11 @@ public class Main implements Runnable
     }
 
     private final Map<ServerChannel, WsContext> channelToWs = new ConcurrentHashMap<>();
+    private final Cache<ServerChannel, Game.PlayerView> viewCache = Caffeine.newBuilder().expireAfterWrite(Duration.ofMinutes(30)).build();
 
     private Javalin server;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper;
 
     @Override
     public void run()
@@ -54,7 +59,13 @@ public class Main implements Runnable
         LOGGER.atInfo().log("Server starting");
         var profile = DaggerProfileLoaderFactory.create().loader().load(profileName);
         server = Javalin.create(profile::configureServer);
-        var engine = DaggerGameEngineFactory.create().engine();
+        var engineFactory = DaggerGameEngineFactory.create();
+        objectMapper = engineFactory.mapper();
+        var engine = engineFactory.engine();
+        for (var game :
+                engineFactory.gameDefinitions()) {
+            engine.registerGame(game);
+        }
         engine.registerGame(new NuoGameDefinition());
         engine.registerCallback(this::onMessage);
         _attach(server, engine);
@@ -75,10 +86,7 @@ public class Main implements Runnable
         {
             ctx.send(_writePlayerView(message));
         }
-        else
-        {
-            throw new IllegalStateException("No WS available for message");
-        }
+        viewCache.put(serverChannel, message);
     }
 
     private void _attach(Javalin server, Engine engine)
@@ -103,6 +111,31 @@ public class Main implements Runnable
                     long gameId = ctx.pathParamAsClass("gameId", Long.class).get();
                     ctx.json(engine.joinGame(playerId, gameId));
                 });
+                get("{game}/{gameId}", ctx -> {
+                    var channel = new ServerChannel(
+                            getPlayerId(ctx),
+                            ctx.pathParamAsClass("gameId", Long.class).get(),
+                            ctx.pathParam("game"));
+                    var view = viewCache.getIfPresent(channel);
+                    if (view != null) {
+                        ctx.json(view);
+                    } else {
+                        ctx.status(HttpStatus.NO_CONTENT);
+                    }
+                });
+                post("{game}/{gameId}/", ctx -> {
+                    var channel = new ServerChannel(
+                            getPlayerId(ctx),
+                            ctx.pathParamAsClass("gameId", Long.class).get(),
+                            ctx.pathParam("game"));
+                    engine.message(channel, _parseAction(ctx.body()));
+                    var view = viewCache.getIfPresent(channel);
+                    if (view != null) {
+                        ctx.json(view);
+                    } else {
+                        ctx.status(HttpStatus.NO_CONTENT);
+                    }
+                });
                 ws("{game}/{gameId}", ws -> {
                     ws.onConnect(ctx -> {
                         var channel = new ServerChannel(
@@ -117,6 +150,13 @@ public class Main implements Runnable
                                 ctx.pathParamAsClass("gameId", Long.class).get(),
                                 ctx.pathParam("game"));
                         engine.message(channel, _parseAction(ctx.message()));
+                    });
+                    ws.onClose(ctx -> {
+                        var channel = new ServerChannel(
+                                getPlayerId(ctx),
+                                ctx.pathParamAsClass("gameId", Long.class).get(),
+                                ctx.pathParam("game"));
+                        channelToWs.remove(channel);
                     });
                 });
             });
@@ -133,7 +173,7 @@ public class Main implements Runnable
         return Objects.requireNonNull(ctx.attribute(PLAYER_ID_KEY));
     }
 
-    static record ServerChannel(long playerId, long gameId, String gameType) implements Engine.Channel
+    record ServerChannel(long playerId, long gameId, String gameType) implements Engine.Channel
     {
         public ServerChannel(Engine.Channel other)
         {
