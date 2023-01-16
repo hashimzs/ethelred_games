@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 /**
  * quick hack replacement to avoid depending on Guava
- * @param <T>
+ * @param <T> The type of items in the Multiset
  */
 @JsonSerialize(using = MyMultisetSerializer.class)
 public class Multiset<T extends Comparable<T>> implements Iterable<T> {

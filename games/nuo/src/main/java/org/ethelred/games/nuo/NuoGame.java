@@ -33,8 +33,7 @@ public class NuoGame extends BaseGame<NuoPlayer>
     private boolean reversedDirection = false;
     private @Nullable
     Card current;
-    private @Nullable
-    Card.Color wildColor;
+    private Card.Color wildColor;
     private @NotNull
     PlayState playState = PlayState.NORMAL;
     // TODO last card + challenge states
