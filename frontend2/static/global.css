@@ -1,0 +1,36 @@
+body {
+    background-color: darkcyan;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.fl {
+	display: flex;
+	justify-content: center;
+}
+.col {
+	flex-direction: column;
+    justify-content: start;
+}
+
+.card img {
+    width: 8rem;
+    filter: brightness(70%);
+}
+
+.turn .card img {
+    filter: brightness(100%);
+}
+
+.r {
+    background-color: red;
+}
+.g {
+    background-color: green;
+}
+.b {
+    background-color: blue;
+    color: white;
+}
+.y {
+    background-color: yellow;
+}

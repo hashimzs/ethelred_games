@@ -1,0 +1,42 @@
+plugins {
+    // Apply the java Plugin to add support for Java.
+    id 'java'
+    id 'groovy' // for tests
+}
+
+repositories {
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
+}
+
+dependencies {
+    implementation libs.log4j.api
+    runtimeOnly libs.bundles.log4j.runtime
+
+    implementation 'org.jetbrains:annotations:23.0.0'
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.2'
+
+    testImplementation 'org.codehaus.groovy:groovy-all:3.0.14'
+    testImplementation ('org.spockframework:spock-core:2.3-groovy-3.0') {
+        exclude group: 'org.codehaus.groovy'
+    }
+
+    // used for mocking
+    testRuntimeOnly 'net.bytebuddy:byte-buddy:1.12.20'
+    testRuntimeOnly 'org.objenesis:objenesis:3.3'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+testing {
+    suites {
+        // Configure the built-in test suite
+        test {
+            useJUnitJupiter()
+        }
+    }
+}
