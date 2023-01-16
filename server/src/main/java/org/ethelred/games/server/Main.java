@@ -2,7 +2,6 @@ package org.ethelred.games.server;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.annotations.VisibleForTesting;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
@@ -16,16 +15,18 @@ import org.ethelred.games.core.Engine;
 import org.ethelred.games.core.PlayerView;
 import org.ethelred.games.nuo.NuoGameDefinition;
 import picocli.CommandLine;
-import static io.javalin.apibuilder.ApiBuilder.*;
 
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.LongSupplier;
 
+import static io.javalin.apibuilder.ApiBuilder.*;
+
 /**
- * TODO
+ * Server application.
  *
  * @author eharman
  * @since 2021-04-14
@@ -39,8 +40,8 @@ public class Main implements Runnable
     @org.jetbrains.annotations.VisibleForTesting
     public GameEngineComponent engineFactory = DaggerGameEngineComponent.create();
 
-    @CommandLine.Option(names = {"-p", "--profile"})
-    private String profileName = "development";
+    @CommandLine.Option(names = {"-p", "--profile"}, defaultValue = "development")
+    private String profileName;
 
     public static void main(String[] args)
     {
@@ -49,20 +50,16 @@ public class Main implements Runnable
 
     private final Map<Channel, WsContext> channelToWs = new ConcurrentHashMap<>();
 
-    private Javalin server;
-
     private ObjectMapper objectMapper;
     private LongSupplier idSupplier;
 
     @Override
     public void run()
     {
-        LOGGER.atInfo().log("Server starting");
+        LOGGER.info("Server starting");
         var profile = DaggerProfileLoaderFactory.create().loader().load(profileName);
-        server = Javalin.create(javalinConfig -> {
-            javalinConfig.requestLogger.http((ctx, ms) -> {
-                LOGGER.debug("Request {} {}", ctx.method(), ctx.url());
-            });
+        Javalin server = Javalin.create(javalinConfig -> {
+            javalinConfig.requestLogger.http((ctx, ms) -> LOGGER.debug("Request {} {}", ctx.method(), ctx.url()));
             profile.configureServer(javalinConfig);
         });
         objectMapper = engineFactory.mapper();
@@ -75,14 +72,8 @@ public class Main implements Runnable
         engine.registerGame(new NuoGameDefinition());
         engine.registerCallback(this::onMessage);
         server.updateConfig(cfg -> cfg.jsonMapper(new JavalinJackson(objectMapper)));
-        _attach(server, engine);
+        _attach(server, engine, profile);
         server.start(profile.getPort());
-    }
-
-    @VisibleForTesting
-    public void close()
-    {
-        server.stop();
     }
 
     private void onMessage(Channel channel, PlayerView message)
@@ -94,7 +85,7 @@ public class Main implements Runnable
         }
     }
 
-    private void _attach(Javalin server, Engine engine)
+    private void _attach(Javalin server, Engine engine, @SuppressWarnings("unused") Profile profile)
     {
         server.routes(() -> {
             before(ctx -> {
@@ -116,7 +107,7 @@ public class Main implements Runnable
                         name = name.substring(1, name.length() - 1);
                     }
                     engine.playerName(getPlayerId(ctx), name);
-                    ctx.cookie(PLAYER_NAME_KEY, URLEncoder.encode(name));
+                    ctx.cookie(PLAYER_NAME_KEY, URLEncoder.encode(name, StandardCharsets.UTF_8));
                     ctx.status(HttpStatus.NO_CONTENT);
                 });
                 post("{game}", ctx -> {
