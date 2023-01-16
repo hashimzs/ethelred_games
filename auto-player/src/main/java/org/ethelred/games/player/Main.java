@@ -11,6 +11,7 @@ import feign.slf4j.Slf4jLogger;
 import org.apache.logging.log4j.LogManager;
 import picocli.CommandLine;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -21,7 +22,7 @@ import java.util.concurrent.Future;
 public class Main implements Runnable {
     private final static org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
 
-    private final Random random = new Random();
+    private final Random random = new SecureRandom();
     @CommandLine.Option(names = {"-u", "--base"}, description = "Base for URL", defaultValue = "http://localhost:7000")
     private String urlBase;
 
