@@ -8,7 +8,7 @@ repositories {
 }
 
 dependencies {
-    implementation group: 'io.javalin', name: 'javalin', version: '5.2.0'
+    implementation group: 'io.javalin', name: 'javalin', version: '5.3.1'
     implementation 'info.picocli:picocli:4.7.0'
     implementation 'com.github.callicoder:java-snowflake:a166af56e2'
 
@@ -31,7 +31,7 @@ dependencies {
     // ref https://evojam.com/technology-blog/2020/5/18/the-secret-of-painless-websocket-tests-with-spock-framework
     testImplementation 'com.neovisionaries:nv-websocket-client:2.14'
 
-    testImplementation 'com.squareup.okhttp3:okhttp:5.0.0-alpha.10'
+    testImplementation 'com.squareup.okhttp3:okhttp:5.0.0-alpha.11'
 }
 
 application {
