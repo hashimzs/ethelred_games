@@ -79,7 +79,7 @@ public class NuoGame extends BaseGame<NuoPlayer>
         current = card;
     }
 
-    public void wildColor(@Nullable Card.Color color)
+    public void wildColor(Card.Color color)
     {
         wildColor = color;
     }
@@ -99,7 +99,6 @@ public class NuoGame extends BaseGame<NuoPlayer>
         this.playState = playState;
     }
 
-    @Nullable
     Card.Color wildColor()
     {
         return wildColor;
@@ -172,8 +171,8 @@ public class NuoGame extends BaseGame<NuoPlayer>
         boolean reversedDirection;
         @JsonProperty
         Card current;
-        @Nullable
-                @JsonProperty
+
+        @JsonProperty
         Card.Color wildColor;
 
         @JsonProperty
