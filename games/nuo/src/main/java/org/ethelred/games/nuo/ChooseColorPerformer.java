@@ -21,7 +21,7 @@ public class ChooseColorPerformer implements ActionPerformer<NuoGame>
         validate(game.status() == Game.Status.IN_PROGRESS, "Game is not in progress");
         validate(game.playState() == NuoGame.PlayState.CHOOSE_COLOR, "Not expecting to choose color");
         validate(player.same(game.currentPlayer()), "Not player's turn");
-        var color = Card.Color.fromCode(action.argumentAsString().charAt(0));
+        var color = Color.fromCode(action.argumentAsString().charAt(0));
         game.wildColor(color);
         game.playState(NuoGame.PlayState.NORMAL);
         game.nextPlayer();

@@ -57,7 +57,7 @@ public class PlayCardPerformer implements ActionPerformer<NuoGame>
         card = np.takeCard(card);
         if (card == null)
         {
-            throw new InvalidActionException("Player did not have card " + card.shortCode());
+            throw new InvalidActionException("Player did not have card " + cardCode);
         }
 
         // if we get here we think the player has the card and it's a valid one to play, so go ahead
@@ -110,18 +110,18 @@ public class PlayCardPerformer implements ActionPerformer<NuoGame>
     {
         var current = game.current();
         LOGGER.debug("isValidPlay? current {} played {}", current, card);
-        if (card.color() == Card.Color.WILD && card.type() == Card.Type.DRAW_FOUR)
+        if (card.color() == Color.WILD && card.type() == Card.Type.DRAW_FOUR)
         {
             // check that the player has no other playable cards in hand
             return np.hand().stream().filter(c -> c.type() != Card.Type.DRAW_FOUR).noneMatch(c -> isValidPlay(game, np, c));
         }
-        else if (card.color() == Card.Color.WILD)
+        else if (card.color() == Color.WILD)
         {
             return true;
         }
         else
         {
-            Card.Color wildColor = game.wildColor();
+            Color wildColor = game.wildColor();
             if (card.code() == current.code())
             {
                 return true;

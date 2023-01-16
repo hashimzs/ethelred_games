@@ -40,7 +40,7 @@ class TestCard extends Specification {
             def card = Card.fromCode('r6')
 
         then:
-            card.color() == Card.Color.RED
+            card.color() == Color.RED
             card.type() == Card.Type.NUMBER
     }
 }
