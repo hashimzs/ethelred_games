@@ -1,21 +1,13 @@
 package org.ethelred.games.nuo
 
-import com.agorapulse.gru.Client
 import com.agorapulse.gru.Gru
-import com.agorapulse.gru.GruContext
-import com.agorapulse.gru.Squad
 import com.agorapulse.gru.http.Http
 import com.agorapulse.gru.jsonunit.MatchesPattern
-import com.agorapulse.gru.minions.AbstractMinion
-import groovy.json.JsonSlurper
-import org.ethelred.games.server.Main
 import org.ethelred.games.server.DaggerTestGameEngineComponent
-import org.hamcrest.Matchers
+import org.ethelred.games.server.Main
 import picocli.CommandLine
 import spock.lang.AutoCleanup
 import spock.lang.Specification
-
-import java.util.function.Consumer
 
 class ServerTest extends Specification {
     @AutoCleanup
@@ -175,7 +167,8 @@ class ServerTest extends Specification {
     
     },
     "shortCode":"ABCD",
-    "status":"IN_PROGRESS"
+    "status":"IN_PROGRESS",
+    "log":"${json-unit.ignore}"
 }
 }
 
