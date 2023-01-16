@@ -2,9 +2,9 @@ package org.ethelred.games.core;
 
 public class BooleanAction extends Action
 {
-    public BooleanAction(Player player, String name, boolean argument)
+    public BooleanAction(String name, boolean argument)
     {
-        super(player, name);
+        super(name);
         this.argument = argument;
     }
 

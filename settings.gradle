@@ -4,4 +4,4 @@ pluginManagement {
 }
 
 rootProject.name = 'ethelred_games'
-include('client', 'server', 'engine', ':games:nuo', ':games:duo')
+include('client', 'server', 'engine', ':games:nuo', ':games:duo', 'auto-player')

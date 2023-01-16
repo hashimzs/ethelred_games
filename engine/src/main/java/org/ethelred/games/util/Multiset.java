@@ -1,19 +1,26 @@
 package org.ethelred.games.util;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.ethelred.games.serialization.MyMultisetSerializer;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Stream;
 
 /**
  * quick hack replacement to avoid depending on Guava
  * @param <T>
  */
-public class Multiset<T> {
-    private final Map<T, Integer> map = new HashMap<>();
+@JsonSerialize(using = MyMultisetSerializer.class)
+public class Multiset<T extends Comparable<T>> implements Iterable<T> {
+    private final Map<T, Integer> map = new TreeMap<>();
 
     @SafeVarargs
-    public static <TT> Multiset<TT> of(TT... items) {
+    public static <TT extends Comparable<TT>> Multiset<TT> of(TT... items) {
         var r = new Multiset<TT>();
         for (var item :
                 items) {
@@ -44,5 +51,37 @@ public class Multiset<T> {
 
     public int size() {
         return map.values().stream().mapToInt(Integer::intValue).sum();
+    }
+
+    @NotNull
+    @Override
+    public Iterator<T> iterator() {
+        return new MyIterator(map.entrySet().iterator());
+    }
+
+    private class MyIterator implements Iterator<T> {
+        private final Iterator<Map.Entry<T, Integer>> entryIterator;
+        private int index;
+        private Map.Entry<T, Integer> current;
+
+        public MyIterator(Iterator<Map.Entry<T, Integer>> entryIterator) {
+            this.entryIterator = entryIterator;
+        }
+
+        @Override
+        public boolean hasNext() {
+                return entryIterator.hasNext() || (current != null && index > 1);
+        }
+
+        @Override
+        public T next() {
+            if (current == null || index == 1) {
+                current = entryIterator.next();
+                index = current.getValue();
+            } else {
+                index--;
+            }
+            return current.getKey();
+        }
     }
 }

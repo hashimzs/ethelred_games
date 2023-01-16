@@ -9,9 +9,9 @@ public class PlayerReadyPerformer implements ActionPerformer<BaseGame<?>>
     }
 
     @Override
-    public void perform(BaseGame<?> game, Action action)
+    public void perform(BaseGame<?> game, Player player, Action action)
     {
-        validate(game.status() == Game.Status.PRESTART);
-        game.playerReady(action.player());
+        validate(game.status() == Game.Status.PRESTART, "Game has started");
+        game.playerReady(player);
     }
 }

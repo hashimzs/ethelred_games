@@ -1,5 +1,7 @@
 package org.ethelred.games.nuo;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ethelred.games.core.Action;
 import org.ethelred.games.core.ActionPerformer;
 import org.ethelred.games.core.Game;
@@ -8,6 +10,7 @@ import org.ethelred.games.core.Player;
 
 public class PlayCardPerformer implements ActionPerformer<NuoGame>
 {
+    private static final Logger LOGGER = LogManager.getLogger();
     public static final String NAME = "playCard";
 
     @Override
@@ -17,19 +20,19 @@ public class PlayCardPerformer implements ActionPerformer<NuoGame>
     }
 
     @Override
-    public void perform(NuoGame game, Action action)
+    public void perform(NuoGame game, Player player, Action action)
     {
-        playCard(game, action.player(), action.argumentAsString());
+        playCard(game, player, action.argumentAsString());
     }
 
     /* package */ void playCard(NuoGame game, Player player, String cardCode)
     {
-        validate(game.status() == Game.Status.IN_PROGRESS);
-        validate(game.playState() == NuoGame.PlayState.NORMAL);
+        validate(game.status() == Game.Status.IN_PROGRESS, "Game is not in progress");
+        validate(game.playState() == NuoGame.PlayState.NORMAL, "Not the expected state");
 
         // check that the player sent the action is actually the player whose turn it is
-        var np = game.currentPlayer();
-        validate(np.same(player));
+        var currentPlayer = game.currentPlayer();
+        validate(currentPlayer.same(player), "Not the current player");
 
         // check that code is a valid card
         Card card;
@@ -39,20 +42,22 @@ public class PlayCardPerformer implements ActionPerformer<NuoGame>
         }
         catch (IllegalArgumentException e)
         {
-            throw new InvalidActionException();
+            throw new InvalidActionException(e);
         }
+
+        var np = game.gamePlayer(player);
 
         // check if it is a match for the current card
         if (!isValidPlay(game, np, card))
         {
-            throw new InvalidActionException();
+            throw new InvalidActionException("Invalid play " + card.shortCode());
         }
 
         // check that player has the card
         card = np.takeCard(card);
         if (card == null)
         {
-            throw new InvalidActionException();
+            throw new InvalidActionException("Player did not have card " + card.shortCode());
         }
 
         // if we get here we think the player has the card and it's a valid one to play, so go ahead
@@ -61,7 +66,7 @@ public class PlayCardPerformer implements ActionPerformer<NuoGame>
 
         if (np.hand().isEmpty())
         {
-            game.winner(np);
+            game.winner(currentPlayer);
             return;
         }
 
@@ -70,7 +75,7 @@ public class PlayCardPerformer implements ActionPerformer<NuoGame>
         {
             case WILD -> game.playState(NuoGame.PlayState.CHOOSE_COLOR);
             case DRAW_FOUR -> {
-                var nextPlayer = game.peekNextPlayer();
+                var nextPlayer = game.gamePlayer(game.peekNextPlayer());
                 for (int i = 0; i < 4; i++)
                 {
                     nextPlayer.giveCard(game.takeCard());
@@ -79,7 +84,7 @@ public class PlayCardPerformer implements ActionPerformer<NuoGame>
             }
             case NUMBER -> game.nextPlayer();
             case DRAW_TWO -> {
-                var nextPlayer = game.nextPlayer();
+                var nextPlayer = game.gamePlayer(game.nextPlayer());
                 for (int i = 0; i < 2; i++)
                 {
                     nextPlayer.giveCard(game.takeCard());
@@ -104,6 +109,7 @@ public class PlayCardPerformer implements ActionPerformer<NuoGame>
     public static boolean isValidPlay(NuoGame game, NuoPlayer np, Card card)
     {
         var current = game.current();
+        LOGGER.debug("isValidPlay? current {} played {}", current, card);
         if (card.color() == Card.Color.WILD && card.type() == Card.Type.DRAW_FOUR)
         {
             // check that the player has no other playable cards in hand
@@ -123,7 +129,7 @@ public class PlayCardPerformer implements ActionPerformer<NuoGame>
             {
                 return true;
             }
-            else return current.type() == Card.Type.WILD && card.color() == wildColor;
+            else return current.type().isWild() && card.color() == wildColor;
         }
     }
 

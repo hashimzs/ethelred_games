@@ -2,6 +2,7 @@ package org.ethelred.games.nuo;
 
 import org.ethelred.games.core.ActionPerformer;
 import org.ethelred.games.core.GameDefinition;
+import org.ethelred.games.core.PlayAgainPerformer;
 import org.ethelred.games.core.PlayerReadyPerformer;
 
 import java.util.Random;
@@ -31,7 +32,8 @@ public class NuoGameDefinition implements GameDefinition<NuoGame>
                 new ChooseColorPerformer(),
                 new DrawCardPerformer(),
                 playCard,
-                new PlayDrawnPerformer(playCard)
+                new PlayDrawnPerformer(playCard),
+                new PlayAgainPerformer()
         );
     }
 

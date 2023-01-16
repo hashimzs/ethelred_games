@@ -1,10 +1,10 @@
 package org.ethelred.games.nuo;
 
-import org.ethelred.games.core.Deserialize;
-import org.ethelred.games.core.Serialize;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import org.jetbrains.annotations.NotNull;
 
-public record Card(Color color, char code)
-{
+public record Card(Color color, char code) implements Comparable<Card> {
     public Card
     {
         var t = Type.fromCode(code);
@@ -12,6 +12,11 @@ public record Card(Color color, char code)
         {
             throw new IllegalArgumentException("Invalid combination");
         }
+    }
+
+    @Override
+    public int compareTo(@NotNull Card o) {
+        return shortCode().compareTo(o.shortCode());
     }
 
     enum Type {
@@ -81,6 +86,7 @@ public record Card(Color color, char code)
         YELLOW('y'),
         WILD('x');
 
+        @JsonValue
         private final char shortCode;
 
         Color(char shortCode)
@@ -92,7 +98,7 @@ public record Card(Color color, char code)
         {
             for (Color c: values())
             {
-                if (code == c.shortCode)
+                if (Character.toLowerCase(code) == c.shortCode)
                 {
                     return c;
                 }
@@ -101,7 +107,7 @@ public record Card(Color color, char code)
         }
     }
 
-    @Serialize
+    @JsonValue
     public String shortCode()
     {
         return String.valueOf(color.shortCode) + code;
@@ -112,7 +118,7 @@ public record Card(Color color, char code)
         return Type.fromCode(code);
     }
 
-    @Deserialize
+    @JsonCreator
     public static Card fromCode(String cardCode)
     {
         if (cardCode.length() == 2)

@@ -1,13 +1,15 @@
 package org.ethelred.games.core;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.ethelred.games.serialization.ActionDeserializer;
+
+@JsonDeserialize(using = ActionDeserializer.class)
 public abstract class Action
 {
-    private final Player player;
     private final String name;
 
-    public Action(Player player, String name)
+    public Action(String name)
     {
-        this.player = player;
         this.name = name;
     }
 
@@ -15,11 +17,12 @@ public abstract class Action
     {
         return name;
     }
-    public Player player()
-    {
-        return player;
-    }
 
     public abstract String argumentAsString();
     public abstract boolean argumentAsBoolean();
+
+    @Override
+    public String toString() {
+        return "Action{" + name + ", " + argumentAsString() + "}";
+    }
 }

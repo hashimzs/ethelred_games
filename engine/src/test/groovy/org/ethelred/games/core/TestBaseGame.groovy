@@ -95,15 +95,15 @@ class TestBaseGame extends Specification {
     }
 }
 
-class SimpleGame extends BaseGame<BasePlayer> {
+class SimpleGame extends BaseGame<Object> {
 
     SimpleGame(long id) {
         super(id)
     }
 
     @Override
-    protected BasePlayer createGamePlayer(Player p) {
-        return new BasePlayer(p)
+    protected Object createGamePlayer() {
+        return new Object()
     }
 
     @Override
@@ -129,6 +129,11 @@ class SimpleGame extends BaseGame<BasePlayer> {
     @Override
     String type() {
         return "simple"
+    }
+
+    @Override
+    String shortCode() {
+        return "ABC"
     }
 
     @Override

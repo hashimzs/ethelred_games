@@ -1,19 +1,33 @@
 package org.ethelred.games.core;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.TreeMap;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-public abstract class BaseGame<P extends Player> implements Game<P>
+public abstract class BaseGame<P extends GamePlayer> implements Game
 {
     private final long id;
+    private String shortCode;
     private volatile Status status = Status.PRESTART;
-    private final Set<Long> readyPlayerIds = new HashSet<>(maxPlayers());
-    private final List<P> players = new ArrayList<>(maxPlayers());
+
+    enum ReadyState {
+        PRESTART,
+        READY,
+        PLAY_AGAIN,
+        END;
+    }
+
+    private final Map<Player, P> players = new TreeMap<>();
+    private final Map<Player, ReadyState> readyPlayers = new TreeMap<>();
+    private final List<Player> playerOrder = new ArrayList<>(maxPlayers());
+    /* package */ final GameLog log = new GameLog(maxPlayers() * 2);
+
+    private Player winner;
     private int currentPlayerIndex = 0;
 
     public BaseGame(long id)
@@ -34,33 +48,64 @@ public abstract class BaseGame<P extends Player> implements Game<P>
     }
 
     @Override
-    public void addPlayer(Player player)
-    {
-        if (status == Status.PRESTART && players.size() < maxPlayers())
-        {
-            players.add(createGamePlayer(player));
-        } else
-        {
-            throw new IllegalStateException();
-        }
+    public void shortCode(String shortCode) {
+        this.shortCode = shortCode;
     }
 
-    protected abstract P createGamePlayer(Player p);
+    @Override
+    public String shortCode() {
+        return shortCode;
+    }
+
+    @Override
+    public void addPlayer(Player player)
+    {
+        if (status == Status.PRESTART && players.size() < maxPlayers()) {
+            players.put(player, createGamePlayer());
+            readyPlayers.put(player, ReadyState.PRESTART);
+            playerOrder.add(player);
+        } else if (status != Status.IN_PROGRESS || !players.containsKey(player)) {
+            throw new IllegalStateException();
+        }
+
+    }
+
+    protected abstract P createGamePlayer();
 
     protected abstract int maxPlayers();
 
+    @Override
     public void playerReady(Player player)
     {
-        if (players.stream().noneMatch(p -> p.same(player)))
+        if (!readyPlayers.containsKey(player))
         {
-            throw new InvalidActionException();
+            throw new InvalidActionException("Player is not in this game");
         }
-        readyPlayerIds.add(player.id());
-        if (players.stream().allMatch(v -> readyPlayerIds.contains(v.id())) &&
+        readyPlayers.put(player, ReadyState.READY);
+        if (readyPlayers.values().stream().allMatch(x -> x == ReadyState.READY) &&
                 players.size() >= minPlayers())
         {
             start();
             status = Status.IN_PROGRESS;
+        }
+    }
+
+    public void playAgain(Player player, boolean playAgain) {
+        if (!readyPlayers.containsKey(player))
+        {
+            throw new InvalidActionException("Player is not in this game");
+        }
+        readyPlayers.put(player, playAgain ? ReadyState.PLAY_AGAIN : ReadyState.END);
+
+        if (readyPlayers.values().stream().allMatch(x -> x == ReadyState.PLAY_AGAIN || x == ReadyState.END)) {
+            var playAgainPlayers = readyPlayers.entrySet()
+                    .stream()
+                    .filter(e -> e.getValue() == ReadyState.PLAY_AGAIN)
+                    .map(Map.Entry::getKey)
+                    .toList();
+            if (playAgainPlayers.size() >= minPlayers()) {
+                throw new PlayAgainException(playAgainPlayers);
+            }
         }
     }
 
@@ -70,8 +115,8 @@ public abstract class BaseGame<P extends Player> implements Game<P>
 
     public void winner(Player player)
     {
-        // TODO announce winner
         status = Status.ENDED;
+        winner = player;
     }
 
     @Override
@@ -89,30 +134,54 @@ public abstract class BaseGame<P extends Player> implements Game<P>
     }
 
     @Override
-    public P currentPlayer()
+    public Player currentPlayer()
     {
         validatePlayers();
-        return players.get(currentPlayerIndex);
+        return playerOrder.get(currentPlayerIndex);
     }
 
     @Override
-    public P nextPlayer()
+    public Player nextPlayer()
     {
         validatePlayers();
-        currentPlayerIndex = (currentPlayerIndex + nextPlayerIncrement()) % playerCount();
+        currentPlayerIndex = nextIndex();
         return currentPlayer();
     }
 
-    public P peekNextPlayer()
+    public Player peekNextPlayer()
     {
         validatePlayers();
-        var index = (currentPlayerIndex + nextPlayerIncrement()) % playerCount();
-        return players.get(index);
+        var index = nextIndex();
+        return playerOrder.get(index);
     }
 
-    public void eachPlayer(Consumer<P> playerConsumer)
+    private int nextIndex() {
+        var i = currentPlayerIndex + nextPlayerIncrement();
+        if (i < 0) {
+            i = playerCount() - 1;
+        }
+        if (i >= playerCount()) {
+            i = 0;
+        }
+        return i;
+    }
+
+    public void eachPlayer(BiConsumer<Player, P> playerConsumer)
     {
-        players.forEach(playerConsumer);
+        playerOrder.forEach(p -> playerConsumer.accept(p, players.get(p)));
+    }
+
+    /* package */Map<String,Object> gamePublicProperties(Player p) {
+
+            var r = new HashMap<String, Object>();
+            if (status == Status.PRESTART) {
+                r.put("ready", readyPlayers.get(p) == ReadyState.READY);
+            } else if (status == Status.IN_PROGRESS) {
+                r.put("turn", p.same(currentPlayer()));
+            } else if (status == Status.ENDED) {
+                r.put("winner", winner != null && p.same(winner));
+            }
+            return Map.copyOf(r);
     }
 
     protected int nextPlayerIncrement()
@@ -120,15 +189,34 @@ public abstract class BaseGame<P extends Player> implements Game<P>
         return 1;
     }
 
-    protected abstract PlayerView playerView(Player player);
+    public abstract PlayerView playerView(Player player);
 
     @Override
-    public Map<Long, PlayerView> playerViews()
+    public Map<Player, PlayerView> playerViews()
     {
-        return players.stream()
+        return players.keySet().stream()
                 .collect(Collectors.toMap(
-                        Identifiable::id,
+                        x -> x,
                         this::playerView
                 ));
+    }
+
+    public P gamePlayer(Player player) {
+        return players.get(player);
+    }
+
+    public Set<ActionDefinition<?>> actionsFor(Player player) {
+        if (status == Status.PRESTART && readyPlayers.get(player) == ReadyState.PRESTART) {
+            return Set.of(new ActionDefinition<>("playerReady"));
+        }
+        if (status == Status.ENDED && readyPlayers.get(player) == ReadyState.READY) {
+            return Set.of(new ActionDefinition<>("playAgain", true, false));
+        }
+        return Set.of();
+    }
+
+    @Override
+    public void log(Player player, Action action) {
+        log.push(player, action);
     }
 }

@@ -2,9 +2,9 @@ package org.ethelred.games.core;
 
 public class StringAction extends Action
 {
-    public StringAction(Player player, String name, String argument)
+    public StringAction(String name, String argument)
     {
-        super(player, name);
+        super(name);
         this.argument = argument;
     }
 

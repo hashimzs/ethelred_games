@@ -1,16 +1,16 @@
 package org.ethelred.games.core;
 
-public interface ActionPerformer<G extends Game<?>>
+public interface ActionPerformer<G extends Game>
 {
     String actionName();
 
-    void perform(G game, Action action);
+    void perform(G game, Player player, Action action);
 
-    default void validate(boolean condition)
+    default void validate(boolean condition, String description)
     {
         if (!condition)
         {
-            throw new InvalidActionException();
+            throw new InvalidActionException("Validation failed: " + description);
         }
     }
 }

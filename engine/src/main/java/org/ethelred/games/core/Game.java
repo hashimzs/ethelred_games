@@ -6,9 +6,15 @@ import java.util.Set;
 /**
  * Game can be serialized (via Jackson, not Java serialization)
  */
-public interface Game<P extends Player> extends Identifiable<Game<P>>
+public interface Game extends Identifiable<Game>
 {
     String type();
+
+    void shortCode(String shortCode);
+
+    String shortCode();
+
+    void log(Player player, Action action);
 
     enum Status
     {
@@ -19,15 +25,13 @@ public interface Game<P extends Player> extends Identifiable<Game<P>>
 
     void addPlayer(Player player);
 
-    Map<Long, PlayerView> playerViews();
+    Map<Player, PlayerView> playerViews();
+    PlayerView playerView(Player player);
 
-    interface PlayerView
-    {
-        record ActionDefinition(String name, Object... possibleArguments) {}
-        Set<ActionDefinition> availableActions();
-    }
+    void playerReady(Player player);
 
     int playerCount();
-    P currentPlayer();
-    P nextPlayer();
+    Player currentPlayer();
+    Player nextPlayer();
+
 }

@@ -1,15 +1,22 @@
 package org.ethelred.games.nuo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.ethelred.games.core.ActionDefinition;
 import org.ethelred.games.core.BaseGame;
 import org.ethelred.games.core.BasePlayerView;
 import org.ethelred.games.core.Player;
+import org.ethelred.games.core.PlayerView;
 import org.ethelred.games.util.Multiset;
+import org.ethelred.games.util.Util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("SwitchStatementWithTooFewBranches")
@@ -47,9 +54,13 @@ public class NuoGame extends BaseGame<NuoPlayer>
     protected void start()
     {
         IntStream.rangeClosed(1, 7).forEach(n -> {
-            eachPlayer(p -> p.giveCard(deck.takeCard()));
+            eachPlayer((p, gp) -> gp.giveCard(deck.takeCard()));
         });
         current = deck.takeCard();
+        while (current.color() == Card.Color.WILD) {
+            deck.discard(current);
+            current = deck.takeCard();
+        }
     }
 
     @Override
@@ -96,9 +107,9 @@ public class NuoGame extends BaseGame<NuoPlayer>
     }
 
     @Override
-    protected NuoPlayer createGamePlayer(Player p)
+    protected NuoPlayer createGamePlayer()
     {
-        return new NuoPlayer(p);
+        return new NuoPlayer();
     }
 
     @Override
@@ -115,7 +126,7 @@ public class NuoGame extends BaseGame<NuoPlayer>
 
 
     @Override
-    protected PlayerView playerView(Player player)
+    public PlayerView playerView(Player player)
     {
         return new NuoPlayerView(player, this);
     }
@@ -125,55 +136,61 @@ public class NuoGame extends BaseGame<NuoPlayer>
         return deck.takeCard();
     }
 
-    public static class NuoPlayerView extends BasePlayerView
-    {
-        record OtherPlayer(long id, String name, boolean turn, int cardCount)
-        {
+    @Override
+    public Set<ActionDefinition<?>> actionsFor(Player player) {
+        if (status() == Status.IN_PROGRESS && player.same(currentPlayer())) {
+            return Util.merge(getPlayerTurnActions(gamePlayer(player)), super.actionsFor(player));
         }
+        return super.actionsFor(player);
+    }
 
-        List<OtherPlayer> players;
+    private Set<ActionDefinition<?>> getPlayerTurnActions(NuoPlayer nuoPlayer)
+    {
+        Set<ActionDefinition<?>> result = new TreeSet<>();
+        switch (playState)
+        {
+            case NORMAL -> {
+                var validCards = nuoPlayer.hand()
+                        .elementSet()
+                        .stream()
+                        .filter(card -> PlayCardPerformer.isValidPlay(this, nuoPlayer, card))
+                                .collect(Collectors.toSet());
+                if (!validCards.isEmpty()) {
+                    result.add(new ActionDefinition<>(PlayCardPerformer.NAME, validCards));
+                }
+                result.add(new ActionDefinition<>(DrawCardPerformer.NAME));
+            }
+            case CHOOSE_COLOR -> result.add(new ActionDefinition<>(ChooseColorPerformer.NAME, Card.Color.RED, Card.Color.GREEN, Card.Color.BLUE, Card.Color.YELLOW));
+            case PLAY_DRAWN -> result.add(new ActionDefinition<>(PlayDrawnPerformer.NAME, true, false));
+        }
+        return result;
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public static class NuoPlayerView extends BasePlayerView<NuoPlayer>
+    {
+        @JsonProperty
         boolean reversedDirection;
+        @JsonProperty
         Card current;
         @Nullable
+                @JsonProperty
         Card.Color wildColor;
-        NuoPlayer nuoSelf;
+
+        @JsonProperty
+        Card drewCard;
 
         public NuoPlayerView(Player self, NuoGame game)
         {
             super(self, game);
-            players = new ArrayList<>(game.playerCount());
-            game.eachPlayer(np -> {
-                players.add(new OtherPlayer(
-                        np.id(),
-                        np.name(),
-                        np.same(game.currentPlayer()),
-                        np.hand().size()
-                ));
-
-                if (np.same(self))
-                {
-                    nuoSelf = np;
-                    if (np.same(game.currentPlayer()))
-                    {
-                        _addPlayerTurnActions(np.hand(), game.playState());
-                    }
-                }
-            });
+            if (game.status() == Status.PRESTART) {
+                return;
+            }
             reversedDirection = game.reversedDirection;
             current = game.current();
             wildColor = game.wildColor();
-        }
-
-        private void _addPlayerTurnActions(Multiset<Card> hand, PlayState playState)
-        {
-            switch (playState)
-            {
-                case NORMAL -> {
-                    addAction(PlayCardPerformer.NAME, hand.elementSet().toArray());
-                    addAction(DrawCardPerformer.NAME);
-                }
-                case CHOOSE_COLOR -> addAction(ChooseColorPerformer.NAME, Card.Color.RED, Card.Color.GREEN, Card.Color.BLUE, Card.Color.YELLOW);
-                case PLAY_DRAWN -> addAction(PlayDrawnPerformer.NAME, true, false);
+            if (game.playState == PlayState.PLAY_DRAWN) {
+                drewCard = game.gamePlayer(self).drewCard;
             }
         }
     }
