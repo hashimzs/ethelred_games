@@ -5,6 +5,7 @@ import org.ethelred.games.core.GameDefinition;
 import org.ethelred.games.core.PlayAgainPerformer;
 import org.ethelred.games.core.PlayerReadyPerformer;
 
+import java.security.SecureRandom;
 import java.util.Random;
 import java.util.Set;
 
@@ -40,6 +41,6 @@ public class NuoGameDefinition implements GameDefinition<NuoGame>
     @Override
     public NuoGame create(long id)
     {
-        return new NuoGame(id, new StandardDeck(new Random(), (x) -> System.out.printf("TODO %s%n", x)));
+        return new NuoGame(id, new StandardDeck(new SecureRandom(), (x) -> System.out.printf("TODO %s%n", x)));
     }
 }

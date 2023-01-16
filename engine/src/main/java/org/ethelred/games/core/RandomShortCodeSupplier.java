@@ -1,11 +1,12 @@
 package org.ethelred.games.core;
 
+import java.security.SecureRandom;
 import java.util.Random;
 import java.util.function.Supplier;
 
 public class RandomShortCodeSupplier implements Supplier<String> {
 
-    Random r = new Random();
+    Random r = new SecureRandom();
 
     @Override
     public String get() {
