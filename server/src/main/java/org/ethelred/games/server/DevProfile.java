@@ -27,4 +27,9 @@ public class DevProfile implements Profile
     {
         // TODO
     }
+
+    @Override
+    public boolean runNode() {
+        return false;
+    }
 }

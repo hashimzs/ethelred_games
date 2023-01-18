@@ -19,13 +19,13 @@ public class StandardDeck implements Deck
 
     public StandardDeck(Random random, Consumer<String> eventEmitter)
     {
-        deck = _fillDeck(random);
+        deck = fillDeck(random);
         this.random = random;
         this.eventEmitter = eventEmitter;
         discard = new ArrayList<>(108);
     }
 
-    private List<Card> _fillDeck(Random random)
+    private List<Card> fillDeck(Random random)
     {
         var cards = new ArrayList<Card>(108);
         Stream.of(Color.values())

@@ -8,6 +8,7 @@ import org.ethelred.games.util.Multiset;
 import java.io.IOException;
 
 public class MyMultisetSerializer extends StdSerializer<Multiset> {
+    private static final long serialVersionUID = 1;
     public MyMultisetSerializer() {
         super(Multiset.class);
     }

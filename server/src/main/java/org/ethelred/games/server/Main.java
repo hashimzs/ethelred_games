@@ -2,6 +2,7 @@ package org.ethelred.games.server;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
@@ -50,6 +51,8 @@ public class Main implements Runnable
 
     private final Map<Channel, WsContext> channelToWs = new ConcurrentHashMap<>();
 
+    private Javalin server;
+
     private ObjectMapper objectMapper;
     private LongSupplier idSupplier;
 
@@ -58,7 +61,8 @@ public class Main implements Runnable
     {
         LOGGER.info("Server starting");
         var profile = DaggerProfileLoaderFactory.create().loader().load(profileName);
-        Javalin server = Javalin.create(javalinConfig -> {
+        LOGGER.info("Using profile {}", profile);
+        server = Javalin.create(javalinConfig -> {
             javalinConfig.requestLogger.http((ctx, ms) -> LOGGER.debug("Request {} {}", ctx.method(), ctx.url()));
             profile.configureServer(javalinConfig);
         });
@@ -72,8 +76,23 @@ public class Main implements Runnable
         engine.registerGame(new NuoGameDefinition());
         engine.registerCallback(this::onMessage);
         server.updateConfig(cfg -> cfg.jsonMapper(new JavalinJackson(objectMapper)));
-        _attach(server, engine, profile);
+        attach(server, engine, profile);
         server.start(profile.getPort());
+        if (profile.runNode()) {
+            try (var runner = new NodeRunner(profile)) {
+                runner.run();
+            } catch (RuntimeException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @VisibleForTesting
+    public void close()
+    {
+        server.stop();
     }
 
     private void onMessage(Channel channel, PlayerView message)
@@ -85,7 +104,7 @@ public class Main implements Runnable
         }
     }
 
-    private void _attach(Javalin server, Engine engine, @SuppressWarnings("unused") Profile profile)
+    private void attach(Javalin server, Engine engine, @SuppressWarnings("unused") Profile profile)
     {
         server.routes(() -> {
             before(ctx -> {
@@ -188,7 +207,7 @@ public class Main implements Runnable
     @JsonInclude(JsonInclude.Include.NON_NULL)
     record ServerPlayerView(String path, PlayerView playerView, String message) {
         public ServerPlayerView(Channel channel, PlayerView playerView, String message) {
-            this(String.format("/api/%s/%d", channel.gameType(), channel.gameId()), playerView, message);
+            this("/api/%s/%d".formatted(channel.gameType(), channel.gameId()), playerView, message);
         }
 
         public ServerPlayerView(Channel channel, PlayerView playerView) {

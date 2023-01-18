@@ -129,7 +129,9 @@ public class PlayCardPerformer implements ActionPerformer<NuoGame>
             {
                 return true;
             }
-            else return current.type().isWild() && card.color() == wildColor;
+            else {
+                return current.type().isWild() && card.color() == wildColor;
+            }
         }
     }
 

@@ -7,4 +7,6 @@ public interface Profile
     int getPort();
 
     void configureServer(JavalinConfig javalinConfig);
+
+    boolean runNode();
 }

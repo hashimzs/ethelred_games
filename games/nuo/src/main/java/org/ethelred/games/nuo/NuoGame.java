@@ -24,7 +24,7 @@ public class NuoGame extends BaseGame<NuoPlayer>
     }
 
     private final Deck deck;
-    boolean reversedDirection = false;
+    boolean reversedDirection;
     private @Nullable
     Card current;
     private Color wildColor;

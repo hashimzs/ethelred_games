@@ -4,4 +4,6 @@ plugins {
 
 dependencies {
     implementation(libs.bundles.jackson)
+    testImplementation("com.google.guava:guava:31.1-jre") //override default android guava dependency for below
+    testImplementation("com.google.jimfs:jimfs:1.2")
 }

@@ -20,7 +20,7 @@ import java.util.concurrent.Future;
 
 @CommandLine.Command(mixinStandardHelpOptions = true)
 public class Main implements Runnable {
-    private final static org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
+    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
 
     private final Random random = new SecureRandom();
     @CommandLine.Option(names = {"-u", "--base"}, description = "Base for URL", defaultValue = "http://localhost:7000")
