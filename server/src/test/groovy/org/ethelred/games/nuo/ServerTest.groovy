@@ -13,17 +13,27 @@ class ServerTest extends Specification {
     @AutoCleanup
     def server = new Main()
 
+    def port = getFreePort()
+
+    def getFreePort() {
+        def port
+        try (def serverSocket = new ServerSocket(0)) {
+            port = serverSocket.localPort
+        }
+        port
+    }
+
     def getGru() {
         Gru.create(Http.create(this))
-                .prepare("http://localhost:7000")
+                .prepare("http://localhost:$port")
     }
 
     def setup() {
         server.engineFactory = DaggerTestGameEngineComponent.create()
+        server.port = port
         def cmd = new CommandLine(server)
         cmd.execute()
     }
-
 
     def 'get list of games'() {
         expect:

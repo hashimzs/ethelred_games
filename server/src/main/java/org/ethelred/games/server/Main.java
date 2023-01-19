@@ -2,7 +2,6 @@ package org.ethelred.games.server;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.annotations.VisibleForTesting;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
@@ -19,6 +18,7 @@ import org.ethelred.games.core.Channel;
 import org.ethelred.games.core.Engine;
 import org.ethelred.games.core.PlayerView;
 import org.ethelred.games.nuo.NuoGameDefinition;
+import org.jetbrains.annotations.VisibleForTesting;
 import picocli.CommandLine;
 
 import java.net.URLEncoder;
@@ -42,11 +42,17 @@ public class Main implements Runnable
     private static final Logger LOGGER = LogManager.getLogger(Main.class);
     public static final String PLAYER_ID_KEY = "playerId";
     public static final String PLAYER_NAME_KEY = "playerName";
-    @org.jetbrains.annotations.VisibleForTesting
-    public GameEngineComponent engineFactory = DaggerGameEngineComponent.create();
+    @VisibleForTesting
+    public
+    GameEngineComponent engineFactory = DaggerGameEngineComponent.create();
 
     @CommandLine.Mixin
     private NodeRunner.NodeOptions nodeOptions;
+
+    @CommandLine.Option(names = {"--port"})
+    @VisibleForTesting
+    public
+    int port = 7000;
 
     public static void main(String[] args)
     {
@@ -81,7 +87,7 @@ public class Main implements Runnable
         engine.registerCallback(this::onMessage);
         server.updateConfig(cfg -> cfg.jsonMapper(new JavalinJackson(objectMapper)));
         attach(server, engine);
-        server.start(7000);
+        server.start(port);
         if (nodeOptions.isEnabled()) {
             try (var runner = new NodeRunner(nodeOptions)) {
                 runner.run();
@@ -104,8 +110,9 @@ public class Main implements Runnable
         return server;
     }
 
+    @SuppressWarnings("unused") // called from groovy tests
     @VisibleForTesting
-    public void close()
+    void close()
     {
         server.stop();
     }
