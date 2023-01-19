@@ -8,17 +8,32 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.ethelred.games.util.Util;
+import picocli.CommandLine;
 
 public class NodeRunner implements Runnable, AutoCloseable {
+    public static class NodeOptions {
+        @CommandLine.Option(names = {"--enable-node"})
+        boolean enabled;
+
+        @CommandLine.Option(names = {"--node"})
+        Path nodePath;
+
+        @CommandLine.Option(names = {"--script"})
+        Path scriptPath;
+
+        boolean isEnabled() {
+            return enabled || nodePath != null;
+        }
+    }
     private static final Logger LOGGER = LogManager.getLogger();
 
     private final Path node;
     private final Path script;
     private Process process;
 
-    public NodeRunner(Profile profile) {
-        node = findNode();
-        script = findScript();
+    public NodeRunner(NodeOptions options) {
+        node = findNode(options);
+        script = findScript(options);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 close();
@@ -28,7 +43,7 @@ public class NodeRunner implements Runnable, AutoCloseable {
         }));
     }
 
-    private Path findScript() {
+    private Path findScript(NodeOptions options) {
         // TODO using default build location for now
         var projectDir = Util.findParent(Path.of(System.getProperty("user.dir")), p -> p.endsWith("ethelred_games"));
         if (projectDir == null || !Files.exists(projectDir)) {
@@ -43,16 +58,11 @@ public class NodeRunner implements Runnable, AutoCloseable {
         return scriptDir;
     }
 
-    private Path findNode() {
-//        // assume GraalVM nodejs has been installed
-//        var nodePath = Path.of(System.getProperty("java.home"), "bin", "node");
-//        if (!Files.isExecutable(nodePath)) {
-//            throw new IllegalStateException("""
-//                    node at "%s" does not exist or is not executable
-//                    """.formatted(nodePath));
-//        }
-//        return nodePath;
-        return Path.of("/home/edward/.nvm/versions/node/v18.12.1/bin/node");
+    private Path findNode(NodeOptions options) {
+        if (options.nodePath != null) {
+            return options.nodePath;
+        }
+        return Path.of("node");
     }
 
     @Override

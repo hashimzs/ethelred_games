@@ -10,6 +10,10 @@ import io.javalin.json.JavalinJackson;
 import io.javalin.websocket.WsContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.proxy.ProxyServlet;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.ethelred.games.core.Action;
 import org.ethelred.games.core.Channel;
 import org.ethelred.games.core.Engine;
@@ -41,8 +45,8 @@ public class Main implements Runnable
     @org.jetbrains.annotations.VisibleForTesting
     public GameEngineComponent engineFactory = DaggerGameEngineComponent.create();
 
-    @CommandLine.Option(names = {"-p", "--profile"}, defaultValue = "development")
-    private String profileName;
+    @CommandLine.Mixin
+    private NodeRunner.NodeOptions nodeOptions;
 
     public static void main(String[] args)
     {
@@ -60,11 +64,11 @@ public class Main implements Runnable
     public void run()
     {
         LOGGER.info("Server starting");
-        var profile = DaggerProfileLoaderFactory.create().loader().load(profileName);
-        LOGGER.info("Using profile {}", profile);
         server = Javalin.create(javalinConfig -> {
             javalinConfig.requestLogger.http((ctx, ms) -> LOGGER.debug("Request {} {}", ctx.method(), ctx.url()));
-            profile.configureServer(javalinConfig);
+            if (nodeOptions.isEnabled()) {
+                javalinConfig.jetty.server(this::configureJetty);
+            }
         });
         objectMapper = engineFactory.mapper();
         idSupplier = engineFactory.idSupplier();
@@ -76,10 +80,10 @@ public class Main implements Runnable
         engine.registerGame(new NuoGameDefinition());
         engine.registerCallback(this::onMessage);
         server.updateConfig(cfg -> cfg.jsonMapper(new JavalinJackson(objectMapper)));
-        attach(server, engine, profile);
-        server.start(profile.getPort());
-        if (profile.runNode()) {
-            try (var runner = new NodeRunner(profile)) {
+        attach(server, engine);
+        server.start(7000);
+        if (nodeOptions.isEnabled()) {
+            try (var runner = new NodeRunner(nodeOptions)) {
                 runner.run();
             } catch (RuntimeException e) {
                 throw e;
@@ -87,6 +91,17 @@ public class Main implements Runnable
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private Server configureJetty() {
+        var server = new Server();
+        var wrapper = new NonApiWrapper();
+        var context = new ServletContextHandler();
+        var holder = context.addServlet(ProxyServlet.Transparent.class, "/");
+        holder.setInitParameter("proxyTo", "http://localhost:3000");
+        wrapper.setHandler(context);
+        server.setHandler(new HandlerCollection(wrapper));
+        return server;
     }
 
     @VisibleForTesting
@@ -104,7 +119,7 @@ public class Main implements Runnable
         }
     }
 
-    private void attach(Javalin server, Engine engine, @SuppressWarnings("unused") Profile profile)
+    private void attach(Javalin server, Engine engine)
     {
         server.routes(() -> {
             before(ctx -> {

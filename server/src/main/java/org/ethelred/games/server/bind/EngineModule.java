@@ -1,6 +1,5 @@
 package org.ethelred.games.server.bind;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dagger.Provides;
 import org.ethelred.games.core.Engine;
