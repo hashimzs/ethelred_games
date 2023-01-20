@@ -2,23 +2,22 @@ package org.ethelred.games.player;
 
 import com.github.javafaker.Faker;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Comparator;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 public class RandomPlayer implements Runnable {
-    private final static org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
-//    private final static AtomicInteger counter = new AtomicInteger();
-    private final static Faker faker = new Faker();
+    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Faker faker = new Faker();
     private static final Comparator<? super GameApi.Action> CHOICE_COMPARATOR = Comparator.comparing(RandomPlayer::scoreAction);
 
     private static int scoreAction(GameApi.Action action) {
-        if (action.name().equals("playCard")) {
+        if ("playCard".equals(action.name())) {
             return 1;
         }
-        if (action.value().equals("true")) {
+        if ("true".equals(action.value())) {
             return 2;
         }
         return 10;

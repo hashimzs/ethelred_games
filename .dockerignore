@@ -1,0 +1,9 @@
+.github
+.idea
+.nvmrc
+.yarn
+.yarnrc.yml
+build
+Development_notes.md
+gradlew.bat
+renovate.json

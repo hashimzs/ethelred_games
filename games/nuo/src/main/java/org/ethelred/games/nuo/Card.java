@@ -79,34 +79,6 @@ public record Card(Color color, char code) implements Comparable<Card> {
         }
     }
 
-    enum Color {
-        RED('r'),
-        BLUE('b'),
-        GREEN('g'),
-        YELLOW('y'),
-        WILD('x');
-
-        @JsonValue
-        private final char shortCode;
-
-        Color(char shortCode)
-        {
-            this.shortCode = shortCode;
-        }
-
-        static Color fromCode(char code)
-        {
-            for (Color c: values())
-            {
-                if (Character.toLowerCase(code) == c.shortCode)
-                {
-                    return c;
-                }
-            }
-            throw new IllegalArgumentException("Invalid color code " + code);
-        }
-    }
-
     @JsonValue
     public String shortCode()
     {

@@ -2,7 +2,6 @@ package org.ethelred.games.server;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.annotations.VisibleForTesting;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
@@ -10,22 +9,29 @@ import io.javalin.json.JavalinJackson;
 import io.javalin.websocket.WsContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.proxy.ProxyServlet;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.ethelred.games.core.Action;
 import org.ethelred.games.core.Channel;
 import org.ethelred.games.core.Engine;
 import org.ethelred.games.core.PlayerView;
 import org.ethelred.games.nuo.NuoGameDefinition;
+import org.jetbrains.annotations.VisibleForTesting;
 import picocli.CommandLine;
-import static io.javalin.apibuilder.ApiBuilder.*;
 
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.LongSupplier;
 
+import static io.javalin.apibuilder.ApiBuilder.*;
+
 /**
- * TODO
+ * Server application.
  *
  * @author eharman
  * @since 2021-04-14
@@ -36,11 +42,17 @@ public class Main implements Runnable
     private static final Logger LOGGER = LogManager.getLogger(Main.class);
     public static final String PLAYER_ID_KEY = "playerId";
     public static final String PLAYER_NAME_KEY = "playerName";
-    @org.jetbrains.annotations.VisibleForTesting
-    public GameEngineComponent engineFactory = DaggerGameEngineComponent.create();
+    @VisibleForTesting
+    public
+    GameEngineComponent engineFactory = DaggerGameEngineComponent.create();
 
-    @CommandLine.Option(names = {"-p", "--profile"})
-    private String profileName = "development";
+    @CommandLine.Mixin
+    private NodeRunner.NodeOptions nodeOptions;
+
+    @CommandLine.Option(names = {"--port"})
+    @VisibleForTesting
+    public
+    int port = 7000;
 
     public static void main(String[] args)
     {
@@ -57,13 +69,12 @@ public class Main implements Runnable
     @Override
     public void run()
     {
-        LOGGER.atInfo().log("Server starting");
-        var profile = DaggerProfileLoaderFactory.create().loader().load(profileName);
+        LOGGER.info("Server starting");
         server = Javalin.create(javalinConfig -> {
-            javalinConfig.requestLogger.http((ctx, ms) -> {
-                LOGGER.debug("Request {} {}", ctx.method(), ctx.url());
-            });
-            profile.configureServer(javalinConfig);
+            javalinConfig.requestLogger.http((ctx, ms) -> LOGGER.debug("Request {} {}", ctx.method(), ctx.url()));
+            if (nodeOptions.isEnabled()) {
+                javalinConfig.jetty.server(this::configureJetty);
+            }
         });
         objectMapper = engineFactory.mapper();
         idSupplier = engineFactory.idSupplier();
@@ -75,12 +86,33 @@ public class Main implements Runnable
         engine.registerGame(new NuoGameDefinition());
         engine.registerCallback(this::onMessage);
         server.updateConfig(cfg -> cfg.jsonMapper(new JavalinJackson(objectMapper)));
-        _attach(server, engine);
-        server.start(profile.getPort());
+        attach(server, engine);
+        server.start(port);
+        if (nodeOptions.isEnabled()) {
+            try (var runner = new NodeRunner(nodeOptions)) {
+                runner.run();
+            } catch (RuntimeException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
+    private Server configureJetty() {
+        var server = new Server();
+        var wrapper = new NonApiWrapper();
+        var context = new ServletContextHandler();
+        var holder = context.addServlet(ProxyServlet.Transparent.class, "/");
+        holder.setInitParameter("proxyTo", "http://localhost:3000");
+        wrapper.setHandler(context);
+        server.setHandler(new HandlerCollection(wrapper));
+        return server;
+    }
+
+    @SuppressWarnings("unused") // called from groovy tests
     @VisibleForTesting
-    public void close()
+    void close()
     {
         server.stop();
     }
@@ -94,7 +126,7 @@ public class Main implements Runnable
         }
     }
 
-    private void _attach(Javalin server, Engine engine)
+    private void attach(Javalin server, Engine engine)
     {
         server.routes(() -> {
             before(ctx -> {
@@ -116,7 +148,7 @@ public class Main implements Runnable
                         name = name.substring(1, name.length() - 1);
                     }
                     engine.playerName(getPlayerId(ctx), name);
-                    ctx.cookie(PLAYER_NAME_KEY, URLEncoder.encode(name));
+                    ctx.cookie(PLAYER_NAME_KEY, URLEncoder.encode(name, StandardCharsets.UTF_8));
                     ctx.status(HttpStatus.NO_CONTENT);
                 });
                 post("{game}", ctx -> {
@@ -197,7 +229,7 @@ public class Main implements Runnable
     @JsonInclude(JsonInclude.Include.NON_NULL)
     record ServerPlayerView(String path, PlayerView playerView, String message) {
         public ServerPlayerView(Channel channel, PlayerView playerView, String message) {
-            this(String.format("/api/%s/%d", channel.gameType(), channel.gameId()), playerView, message);
+            this("/api/%s/%d".formatted(channel.gameType(), channel.gameId()), playerView, message);
         }
 
         public ServerPlayerView(Channel channel, PlayerView playerView) {

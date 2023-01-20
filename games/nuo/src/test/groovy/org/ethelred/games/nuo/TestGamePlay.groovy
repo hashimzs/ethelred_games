@@ -2,7 +2,6 @@ package org.ethelred.games.nuo
 
 import org.ethelred.games.core.BasePlayer
 import org.ethelred.games.core.StringAction
-import org.ethelred.games.nuo.Card.Color
 import spock.lang.Specification
 
 class TestGamePlay extends Specification {

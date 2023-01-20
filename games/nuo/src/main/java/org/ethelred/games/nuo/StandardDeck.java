@@ -1,5 +1,7 @@
 package org.ethelred.games.nuo;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,18 +19,18 @@ public class StandardDeck implements Deck
 
     public StandardDeck(Random random, Consumer<String> eventEmitter)
     {
-        deck = _fillDeck(random);
+        deck = fillDeck(random);
         this.random = random;
         this.eventEmitter = eventEmitter;
         discard = new ArrayList<>(108);
     }
 
-    private List<Card> _fillDeck(Random random)
+    private List<Card> fillDeck(Random random)
     {
         var cards = new ArrayList<Card>(108);
-        Stream.of(Card.Color.values())
+        Stream.of(Color.values())
                 .forEach(color -> {
-                    if (color == Card.Color.WILD)
+                    if (color == Color.WILD)
                     {
                         IntStream.rangeClosed(0,3).forEach(o -> {
                             cards.add(new Card(color, Card.Type.WILD.code()));
@@ -44,11 +46,7 @@ public class StandardDeck implements Deck
                                 cards.add(new Card(color, (char) ('0' + n)));
                             }
                         });
-                        IntStream.rangeClosed(0,1).forEach(o -> {
-                            Stream.of(Card.Type.SKIP, Card.Type.REVERSE, Card.Type.DRAW_TWO).forEach(t -> {
-                                cards.add(new Card(color, t.code()));
-                            });
-                        });
+                        IntStream.rangeClosed(0,1).forEach(o -> Stream.of(Card.Type.SKIP, Card.Type.REVERSE, Card.Type.DRAW_TWO).forEach(t -> cards.add(new Card(color, t.code()))));
                     }
                 });
         Collections.shuffle(cards, random);
@@ -56,6 +54,7 @@ public class StandardDeck implements Deck
     }
 
     @Override
+    @NotNull
     public Card takeCard()
     {
         if (deck.isEmpty())
@@ -69,7 +68,7 @@ public class StandardDeck implements Deck
     }
 
     @Override
-    public void discard(Card card)
+    public void discard(@NotNull Card card)
     {
         discard.add(card);
     }

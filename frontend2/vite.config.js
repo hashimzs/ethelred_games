@@ -1,5 +1,5 @@
 import { sveltekit } from '@sveltejs/kit/vite';
-import mockPlugin from 'vite-plugin-file-mock';
+// import mockPlugin from 'vite-plugin-file-mock';
 
 /** @type {import('vite').UserConfig} */
 const config = {

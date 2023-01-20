@@ -1,25 +1,19 @@
 package org.ethelred.games.nuo;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ethelred.games.core.ActionDefinition;
 import org.ethelred.games.core.BaseGame;
-import org.ethelred.games.core.BasePlayerView;
 import org.ethelred.games.core.Player;
 import org.ethelred.games.core.PlayerView;
-import org.ethelred.games.util.Multiset;
 import org.ethelred.games.util.Util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@SuppressWarnings("SwitchStatementWithTooFewBranches")
 public class NuoGame extends BaseGame<NuoPlayer>
 {
     enum PlayState
@@ -30,11 +24,11 @@ public class NuoGame extends BaseGame<NuoPlayer>
     }
 
     private final Deck deck;
-    private boolean reversedDirection = false;
+    boolean reversedDirection;
     private @Nullable
     Card current;
-    private Card.Color wildColor;
-    private @NotNull
+    private Color wildColor;
+    @NotNull
     PlayState playState = PlayState.NORMAL;
     // TODO last card + challenge states
 
@@ -52,11 +46,9 @@ public class NuoGame extends BaseGame<NuoPlayer>
 
     protected void start()
     {
-        IntStream.rangeClosed(1, 7).forEach(n -> {
-            eachPlayer((p, gp) -> gp.giveCard(deck.takeCard()));
-        });
+        IntStream.rangeClosed(1, 7).forEach(n -> eachPlayer((p, gp) -> gp.giveCard(deck.takeCard())));
         current = deck.takeCard();
-        while (current.color() == Card.Color.WILD) {
+        while (current.color() == Color.WILD) {
             deck.discard(current);
             current = deck.takeCard();
         }
@@ -79,7 +71,7 @@ public class NuoGame extends BaseGame<NuoPlayer>
         current = card;
     }
 
-    public void wildColor(Card.Color color)
+    public void wildColor(Color color)
     {
         wildColor = color;
     }
@@ -99,7 +91,7 @@ public class NuoGame extends BaseGame<NuoPlayer>
         this.playState = playState;
     }
 
-    Card.Color wildColor()
+    Color wildColor()
     {
         return wildColor;
     }
@@ -158,39 +150,10 @@ public class NuoGame extends BaseGame<NuoPlayer>
                 }
                 result.add(new ActionDefinition<>(DrawCardPerformer.NAME));
             }
-            case CHOOSE_COLOR -> result.add(new ActionDefinition<>(ChooseColorPerformer.NAME, Card.Color.RED, Card.Color.GREEN, Card.Color.BLUE, Card.Color.YELLOW));
+            case CHOOSE_COLOR -> result.add(new ActionDefinition<>(ChooseColorPerformer.NAME, Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW));
             case PLAY_DRAWN -> result.add(new ActionDefinition<>(PlayDrawnPerformer.NAME, true, false));
         }
         return result;
-    }
-
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public static class NuoPlayerView extends BasePlayerView<NuoPlayer>
-    {
-        @JsonProperty
-        boolean reversedDirection;
-        @JsonProperty
-        Card current;
-
-        @JsonProperty
-        Card.Color wildColor;
-
-        @JsonProperty
-        Card drewCard;
-
-        public NuoPlayerView(Player self, NuoGame game)
-        {
-            super(self, game);
-            if (game.status() == Status.PRESTART) {
-                return;
-            }
-            reversedDirection = game.reversedDirection;
-            current = game.current();
-            wildColor = game.wildColor();
-            if (game.playState == PlayState.PLAY_DRAWN) {
-                drewCard = game.gamePlayer(self).drewCard;
-            }
-        }
     }
 
 }

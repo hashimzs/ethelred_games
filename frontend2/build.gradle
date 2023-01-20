@@ -1,0 +1,8 @@
+plugins {
+    id 'com.github.node-gradle.node' version '3.5.1'
+}
+
+tasks.register('build', PnpmTask) {
+    dependsOn("pnpmInstall")
+    args = ['run', 'build']
+}

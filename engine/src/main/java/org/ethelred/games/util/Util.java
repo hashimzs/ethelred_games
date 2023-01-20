@@ -2,6 +2,7 @@ package org.ethelred.games.util;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -11,8 +12,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 
-public class Util {
+public final class Util {
     private Util(){}
 
     public static <K,V> Map<K, V> merge(Map<K, V> a, Map<K, V> b) {
@@ -46,5 +48,14 @@ public class Util {
             cmp = itA.next().compareTo(itB.next());
         }
         return cmp;
+    }
+
+    public static Path findParent(Path start, Predicate<Path> predicate) {
+        for (var path = start; path.getParent() != null; path = path.getParent()) {
+            if (predicate.test(path)) {
+                return path;
+            }
+        }
+        return null;
     }
 }

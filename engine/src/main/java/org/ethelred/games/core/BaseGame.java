@@ -19,7 +19,7 @@ public abstract class BaseGame<P extends GamePlayer> implements Game
         PRESTART,
         READY,
         PLAY_AGAIN,
-        END;
+        END
     }
 
     private final Map<Player, P> players = new TreeMap<>();
@@ -28,7 +28,7 @@ public abstract class BaseGame<P extends GamePlayer> implements Game
     /* package */ final GameLog log = new GameLog(maxPlayers() * 2);
 
     private Player winner;
-    private int currentPlayerIndex = 0;
+    private int currentPlayerIndex;
 
     public BaseGame(long id)
     {

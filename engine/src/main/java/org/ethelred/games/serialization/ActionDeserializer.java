@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 public class ActionDeserializer extends StdDeserializer<Action>
 {
+    private static final long serialVersionUID = 1;
     public static final JsonPointer[] namePointers = getPointers("/name", "/action");
 
     @NotNull
@@ -47,9 +48,9 @@ public class ActionDeserializer extends StdDeserializer<Action>
     @Override
     public Action deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
         var rootNode = jsonParser.getCodec().readTree(jsonParser);
-        var nameNode = _first(rootNode, namePointers).orElseThrow(() -> new InvalidActionException("Missing name node"));
+        var nameNode = first(rootNode, namePointers).orElseThrow(() -> new InvalidActionException("Missing name node"));
         var name = ((TextNode) nameNode).asText();
-        var argumentNode = _first(rootNode, argumentPointers);
+        var argumentNode = first(rootNode, argumentPointers);
         if (argumentNode.isEmpty() || argumentNode.get() instanceof NullNode)
         {
             return new StringAction(name, "[NULL]");
@@ -66,7 +67,7 @@ public class ActionDeserializer extends StdDeserializer<Action>
         throw new InvalidActionException("Deserialization failed");
     }
 
-    private Optional<TreeNode> _first(TreeNode node, JsonPointer[] pointers)
+    private Optional<TreeNode> first(TreeNode node, JsonPointer[] pointers)
     {
         return Stream.of(pointers)
                 .map(node::at)

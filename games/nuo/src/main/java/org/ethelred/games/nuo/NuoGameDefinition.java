@@ -41,6 +41,6 @@ public class NuoGameDefinition implements GameDefinition<NuoGame>
     @Override
     public NuoGame create(long id)
     {
-        return new NuoGame(id, new StandardDeck(new SecureRandom(), (x) -> System.out.printf("TODO %s%n", x)));
+        return new NuoGame(id, new StandardDeck(new SecureRandom(), x -> System.out.printf("TODO %s%n", x)));
     }
 }
