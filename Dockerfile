@@ -21,8 +21,10 @@ COPY --from=node /usr/local/include /usr/local/include
 COPY --from=node /usr/local/bin /usr/local/bin
 
 COPY . /project
-RUN --mount=type=cache,target=/root/.gradle wget -qO /bin/pnpm "https://github.com/pnpm/pnpm/releases/latest/download/pnpm-linuxstatic-x64" && \
-    chmod +x /bin/pnpm && \
+RUN npm install -g pnpm
+RUN --mount=type=cache,target=/root/.gradle --mount=type=cache,target=/root/.pnpm-store \
+    node -v && \
+    pnpm --version && \
     cd /project && \
     ./gradlew --no-daemon build installDist
 
