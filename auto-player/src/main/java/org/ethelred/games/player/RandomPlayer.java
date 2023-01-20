@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 public class RandomPlayer implements Runnable {
-    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
 //    private final static AtomicInteger counter = new AtomicInteger();
     private static final Faker faker = new Faker();
     private static final Comparator<? super GameApi.Action> CHOICE_COMPARATOR = Comparator.comparing(RandomPlayer::scoreAction);
