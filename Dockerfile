@@ -21,14 +21,14 @@ COPY --from=node /usr/local/include /usr/local/include
 COPY --from=node /usr/local/bin /usr/local/bin
 
 COPY . /project
+WORKDIR /project
 RUN npm install -g pnpm
 RUN --mount=type=cache,target=/root/.gradle --mount=type=cache,target=/root/.pnpm-store \
     node -v && \
     pnpm --version && \
-    cd /project && \
     ./gradlew --no-daemon build installDist
 
-FROM alpine
+FROM alpine:3.16
 
 COPY --from=node /usr/lib /usr/lib
 COPY --from=node /usr/local/share /usr/local/share
