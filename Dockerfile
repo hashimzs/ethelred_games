@@ -43,4 +43,5 @@ COPY --from=jre-build /javaruntime $JAVA_HOME
 COPY --from=builder /project/server/build/install/server /server
 COPY --from=builder /project/frontend2 /frontend
 
+EXPOSE 7000
 CMD ["/server/bin/server", "--enable-node", "--script", "/frontend/build"]
