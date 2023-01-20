@@ -44,6 +44,9 @@ public class NodeRunner implements Runnable, AutoCloseable {
     }
 
     private Path findScript(NodeOptions options) {
+        if (options.scriptPath != null) {
+            return options.scriptPath;
+        }
         // TODO using default build location for now
         var projectDir = Util.findParent(Path.of(System.getProperty("user.dir")), p -> p.endsWith("ethelred_games"));
         if (projectDir == null || !Files.exists(projectDir)) {

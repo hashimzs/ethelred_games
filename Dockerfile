@@ -1,0 +1,44 @@
+FROM node:18-alpine AS node
+
+FROM eclipse-temurin:17-jdk-alpine as jre-build
+
+# Create a custom Java runtime
+RUN apk add --no-cache binutils && \
+    $JAVA_HOME/bin/jlink \
+         --add-modules java.base,java.desktop,java.xml \
+         --strip-debug \
+         --no-man-pages \
+         --no-header-files \
+         --compress=2 \
+         --output /javaruntime
+
+FROM eclipse-temurin:17-jdk-alpine AS builder
+
+COPY --from=node /usr/lib /usr/lib
+COPY --from=node /usr/local/share /usr/local/share
+COPY --from=node /usr/local/lib /usr/local/lib
+COPY --from=node /usr/local/include /usr/local/include
+COPY --from=node /usr/local/bin /usr/local/bin
+
+COPY . /project
+RUN --mount=type=cache,target=/root/.gradle wget -qO /bin/pnpm "https://github.com/pnpm/pnpm/releases/latest/download/pnpm-linuxstatic-x64" && \
+    chmod +x /bin/pnpm && \
+    cd /project && \
+    ./gradlew --no-daemon build installDist
+
+FROM alpine
+
+COPY --from=node /usr/lib /usr/lib
+COPY --from=node /usr/local/share /usr/local/share
+COPY --from=node /usr/local/lib /usr/local/lib
+COPY --from=node /usr/local/include /usr/local/include
+COPY --from=node /usr/local/bin /usr/local/bin
+
+ENV JAVA_HOME=/opt/java
+ENV PATH "${JAVA_HOME}/bin:${PATH}"
+COPY --from=jre-build /javaruntime $JAVA_HOME
+
+COPY --from=builder /project/server/build/install/server /server
+COPY --from=builder /project/frontend2 /frontend
+
+CMD ["/server/bin/server", "--enable-node", "--script", "/frontend/build"]
