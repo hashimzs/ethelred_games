@@ -2,15 +2,14 @@ package org.ethelred.games.player;
 
 import com.github.javafaker.Faker;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Comparator;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 public class RandomPlayer implements Runnable {
     private static final Logger LOGGER = LogManager.getLogger();
-//    private final static AtomicInteger counter = new AtomicInteger();
     private static final Faker faker = new Faker();
     private static final Comparator<? super GameApi.Action> CHOICE_COMPARATOR = Comparator.comparing(RandomPlayer::scoreAction);
 
