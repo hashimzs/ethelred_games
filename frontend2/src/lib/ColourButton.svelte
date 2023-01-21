@@ -1,19 +1,11 @@
 <script lang="ts">
     import {createEventDispatcher} from 'svelte';
+	import { getDisplay, type Colour } from './NuoColour';
 
     const dispatch = createEventDispatcher();
 
-    type Colour = 'r' | 'g' | 'b' | 'y'
     export let colour: Colour
 
-    function getDisplay(c:Colour) {
-        switch(c) {
-            case 'b' : return 'Blue';
-            case 'g' : return 'Green';
-            case 'r' : return 'Red';
-            case 'y' : return 'Yellow';
-        }
-    }
     $: display = getDisplay(colour);
 
     function handle() {
