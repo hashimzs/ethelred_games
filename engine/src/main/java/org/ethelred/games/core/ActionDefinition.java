@@ -8,9 +8,8 @@ import java.util.Set;
 
 import org.ethelred.games.util.Util;
 
-public record ActionDefinition<T extends Comparable<T>>(String name, Set<T> possibleArguments) implements Comparable<ActionDefinition<T>> {
-    @SafeVarargs
-    public ActionDefinition(String name, T... possibleArguments) {
+public record ActionDefinition(String name, Set<String> possibleArguments) implements Comparable<ActionDefinition> {
+    public ActionDefinition(String name, String... possibleArguments) {
         this(name, Set.of(possibleArguments));
     }
 
@@ -19,7 +18,7 @@ public record ActionDefinition<T extends Comparable<T>>(String name, Set<T> poss
     }
 
     @Override
-    public int compareTo(@NotNull ActionDefinition<T> o) {
+    public int compareTo(@NotNull ActionDefinition o) {
         if (equals(o)) {
             return 0;
         }

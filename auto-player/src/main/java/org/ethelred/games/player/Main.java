@@ -9,6 +9,7 @@ import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.slf4j.Slf4jLogger;
 import org.apache.logging.log4j.LogManager;
+import org.ethelred.games.bot.RandomPlayer;
 import picocli.CommandLine;
 
 import java.security.SecureRandom;

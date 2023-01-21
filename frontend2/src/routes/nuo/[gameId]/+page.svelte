@@ -43,6 +43,7 @@
 	$: showChooseColor = actions && actions.some(a => a.name == 'chooseColor');
 	$: showPlayDrawn = actions && actions.some(a => a.name == 'playDrawn');
 	$: showPlayAgain = actions && actions.some(a => a.name == 'playAgain');
+	$: showAddBot = actions && actions.some(a => a.name == 'addBot');
 	$: winner = data.playerView.players.find(p => p.winner)?.name;
 
 	$: hasAction = function(name: string, value?: string | boolean) {
@@ -98,7 +99,10 @@
 				{/if}
 		{/each}
 	</ul>
-	{#if data.playerView.players.length > 2}
+	{#if showAddBot}
+	<div><button on:click={() => action('addBot')}>Add Bot</button></div>
+	{/if}
+	{#if data.playerView.players.length > 2 && !pregame}
 	<div>
 		Direction <Fa icon={data.playerView.reversedDirection ? faArrowUp : faArrowDown} />
 	</div>

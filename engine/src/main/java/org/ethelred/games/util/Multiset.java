@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.ethelred.games.serialization.MyMultisetSerializer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;

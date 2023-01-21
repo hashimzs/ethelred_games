@@ -9,6 +9,7 @@ import org.ethelred.games.core.PlayerManager;
 import org.ethelred.games.serialization.MyCustomSerializationModule;
 
 import javax.inject.Singleton;
+import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 @dagger.Module
@@ -16,8 +17,8 @@ public interface EngineModule
 {
     @Singleton
     @Provides static
-    Engine bindEngine(PlayerManager playerManager, Supplier<String> shortCodeSupplier) {
-        return new InMemoryEngineImpl(playerManager, shortCodeSupplier);
+    Engine bindEngine(PlayerManager playerManager, LongSupplier idSupplier, Supplier<String> shortCodeSupplier) {
+        return new InMemoryEngineImpl(playerManager, idSupplier, shortCodeSupplier);
     }
 
     @Singleton

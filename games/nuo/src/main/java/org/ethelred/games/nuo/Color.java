@@ -24,4 +24,8 @@ enum Color {
         }
         throw new IllegalArgumentException("Invalid color code " + code);
     }
+
+    public String shortCode() {
+        return String.valueOf(shortCode);
+    }
 }

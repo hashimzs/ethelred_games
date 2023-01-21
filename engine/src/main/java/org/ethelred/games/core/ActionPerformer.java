@@ -1,6 +1,8 @@
 package org.ethelred.games.core;
 
-public interface ActionPerformer<G extends Game>
+import org.jetbrains.annotations.NotNull;
+
+public interface ActionPerformer<G extends Game> extends Comparable<ActionPerformer<?>>
 {
     String actionName();
 
@@ -12,5 +14,10 @@ public interface ActionPerformer<G extends Game>
         {
             throw new InvalidActionException("Validation failed: " + description);
         }
+    }
+
+    @Override
+    default int compareTo(@NotNull ActionPerformer<?> o) {
+        return getClass().getName().compareTo(o.getClass().getName());
     }
 }

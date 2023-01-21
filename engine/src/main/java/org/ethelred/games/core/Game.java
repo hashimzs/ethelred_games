@@ -1,7 +1,6 @@
 package org.ethelred.games.core;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Game can be serialized (via Jackson, not Java serialization)

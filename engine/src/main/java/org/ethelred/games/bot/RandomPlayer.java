@@ -1,4 +1,4 @@
-package org.ethelred.games.player;
+package org.ethelred.games.bot;
 
 import com.github.javafaker.Faker;
 import org.apache.logging.log4j.LogManager;
@@ -6,14 +6,16 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Comparator;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class RandomPlayer implements Runnable {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Faker faker = new Faker();
-    private static final Comparator<? super GameApi.Action> CHOICE_COMPARATOR = Comparator.comparing(RandomPlayer::scoreAction);
+    private static final Comparator<? super BotApi.Action> CHOICE_COMPARATOR = Comparator.comparing(RandomPlayer::scoreAction);
+    private static final Set<String> EXCLUDED_ACTIONS = Set.of("addBot");
 
-    private static int scoreAction(GameApi.Action action) {
+    private static int scoreAction(BotApi.Action action) {
         if ("playCard".equals(action.name())) {
             return 1;
         }
@@ -26,10 +28,12 @@ public class RandomPlayer implements Runnable {
 
     private final Random random;
     private final String shortCode;
-    private final GameApi api;
+    private final BotApi api;
     private final String name;
 
-    public RandomPlayer(Random random, String shortCode, GameApi api) {
+    private volatile boolean running = true;
+
+    public RandomPlayer(Random random, String shortCode, BotApi api) {
         this.random = random;
         this.shortCode = shortCode;
         this.api = api;
@@ -42,20 +46,21 @@ public class RandomPlayer implements Runnable {
         try {
             var view = api.joinGame(shortCode);
             setName();
-            while (true) {
+            while (running) {
                 try {
-                    Thread.sleep(random.nextInt(100, 1000));
+                    Thread.sleep(random.nextInt(300, 1100));
                     view = act(view);
                 } catch (InterruptedException e) {
                     //
                 }
             }
+            LOGGER.info("Exiting");
         } catch (Exception e) {
             LOGGER.warn("Unhandled exception, exiting.", e);
         }
     }
 
-    private GameApi.GameResponse act(GameApi.GameResponse view) {
+    private BotApi.GameResponse act(BotApi.GameResponse view) {
         var defs = view.playerView().availableActions();
         if (defs == null || defs.isEmpty()) {
             return api.poll(view.path());
@@ -63,14 +68,18 @@ public class RandomPlayer implements Runnable {
         var choices = defs.stream()
                 .flatMap(actionDefinition -> {
                     if (actionDefinition.possibleArguments().isEmpty()) {
-                        return Stream.of(new GameApi.Action(actionDefinition.name(), ""));
+                        return Stream.of(new BotApi.Action(actionDefinition.name(), ""));
                     } else {
                         return actionDefinition.possibleArguments().stream()
-                                .map(arg -> new GameApi.Action(actionDefinition.name(), arg));
+                                .map(arg -> new BotApi.Action(actionDefinition.name(), arg));
                     }
                 })
+                .filter(action -> !EXCLUDED_ACTIONS.contains(action.name()))
                 .sorted(CHOICE_COMPARATOR)
                 .toList();
+        if (choices.isEmpty()) {
+            return api.poll(view.path());
+        }
         var choice = choices.get(0);
         LOGGER.info("{}: {} {}", name, choice.name(), choice.value());
         return api.action(view.path(), choice);
@@ -78,5 +87,9 @@ public class RandomPlayer implements Runnable {
 
     private void setName() {
         api.setName(name);
+    }
+
+    public void stop() {
+        running = false;
     }
 }

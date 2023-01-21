@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -205,14 +206,18 @@ public abstract class BaseGame<P extends GamePlayer> implements Game
         return players.get(player);
     }
 
-    public Set<ActionDefinition<?>> actionsFor(Player player) {
+    public Set<ActionDefinition> actionsFor(Player player) {
+        var r = new TreeSet<ActionDefinition>();
         if (status == Status.PRESTART && readyPlayers.get(player) == ReadyState.PRESTART) {
-            return Set.of(new ActionDefinition<>("playerReady"));
+            r.add(new ActionDefinition("playerReady"));
+        }
+        if (status == Status.PRESTART && playerCount() < maxPlayers()) {
+            r.add(new ActionDefinition("addBot"));
         }
         if (status == Status.ENDED && readyPlayers.get(player) == ReadyState.READY) {
-            return Set.of(new ActionDefinition<>("playAgain", true, false));
+            r.add(new ActionDefinition("playAgain", "true", "false"));
         }
-        return Set.of();
+        return Set.copyOf(r);
     }
 
     @Override
