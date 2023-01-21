@@ -32,21 +32,21 @@ public class StandardDeck implements Deck
                 .forEach(color -> {
                     if (color == Color.WILD)
                     {
-                        IntStream.rangeClosed(0,3).forEach(o -> {
+                        IntStream.rangeClosed(0, 3).forEach(o -> {
                             cards.add(new Card(color, Card.Type.WILD.code()));
                             cards.add(new Card(color, Card.Type.DRAW_FOUR.code()));
                         });
                     }
                     else
                     {
-                        IntStream.rangeClosed(0,9).forEach(n -> {
+                        IntStream.rangeClosed(0, 9).forEach(n -> {
                             cards.add(new Card(color, (char) ('0' + n)));
                             if (n > 0)
                             {
                                 cards.add(new Card(color, (char) ('0' + n)));
                             }
                         });
-                        IntStream.rangeClosed(0,1).forEach(o -> Stream.of(Card.Type.SKIP, Card.Type.REVERSE, Card.Type.DRAW_TWO).forEach(t -> cards.add(new Card(color, t.code()))));
+                        IntStream.rangeClosed(0, 1).forEach(o -> Stream.of(Card.Type.SKIP, Card.Type.REVERSE, Card.Type.DRAW_TWO).forEach(t -> cards.add(new Card(color, t.code()))));
                     }
                 });
         Collections.shuffle(cards, random);

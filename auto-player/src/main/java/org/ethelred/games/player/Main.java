@@ -24,13 +24,13 @@ public class Main implements Runnable {
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
 
     private final Random random = new SecureRandom();
-    @CommandLine.Option(names = {"-u", "--base"}, description = "Base for URL", defaultValue = "http://localhost:7000")
+    @CommandLine.Option(names = {"-u","--base"}, description = "Base for URL", defaultValue = "http://localhost:7000")
     private String urlBase;
 
-    @CommandLine.Option(names = {"-c", "--code"}, description = "Short code for game to join", required = true)
+    @CommandLine.Option(names = {"-c","--code"}, description = "Short code for game to join", required = true)
     private String shortCode;
 
-    @CommandLine.Option(names = {"-p", "--players"}, description = "How many players to run", defaultValue = "1")
+    @CommandLine.Option(names = {"-p","--players"}, description = "How many players to run", defaultValue = "1")
     private int playerCount;
 
     public static void main(String[] args) {
@@ -41,7 +41,7 @@ public class Main implements Runnable {
     private void setupApi() {
         var jar = new CookieJar();
         var mapper = new ObjectMapper()
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false)
                 ;
         api = Feign.builder()
                 .logger(new Slf4jLogger("Feign"))
@@ -50,7 +50,7 @@ public class Main implements Runnable {
                 .encoder(new JacksonEncoder(mapper))
                 .requestInterceptor(jar)
                 .responseInterceptor(jar)
-                .target(GameApi.class, urlBase);
+                .target(GameApi.class,urlBase);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class Main implements Runnable {
         var futures = new ArrayList<Future<?>>();
         var executor = Executors.newFixedThreadPool(playerCount);
         for (int i = 0; i < playerCount; i++) {
-            var player = new RandomPlayer(random, shortCode, api);
+            var player = new RandomPlayer(random,shortCode,api);
             futures.add(executor.submit(player));
         }
         for (var f :
@@ -67,7 +67,7 @@ public class Main implements Runnable {
             try {
                 f.get();
             } catch (InterruptedException | ExecutionException e) {
-                LOGGER.warn("Exception from task", e);
+                LOGGER.warn("Exception from task",e);
             }
         }
         executor.shutdown();

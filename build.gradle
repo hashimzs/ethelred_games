@@ -45,7 +45,8 @@ rewrite {
 			"org.openrewrite.java.security.JavaSecurityBestPractices",
 			"org.openrewrite.java.migrate.UpgradeToJava17",
 			"org.openrewrite.java.cleanup.CommonStaticAnalysis",
-			"org.openrewrite.java.RemoveUnusedImports"
+			"org.openrewrite.java.RemoveUnusedImports",
+			"org.openrewrite.java.cleanup.Cleanup"
 			)
 }
 

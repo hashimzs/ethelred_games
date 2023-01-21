@@ -23,11 +23,11 @@ public class CookieJar implements RequestInterceptor, ResponseInterceptor {
             template.header("Cookie",
                     values.entrySet()
                             .stream()
-                            .map(e -> "%s=%s".formatted(e.getKey(), e.getValue()))
+                            .map(e -> "%s=%s".formatted(e.getKey(),e.getValue()))
                             .collect(Collectors.joining("; "))
             );
         }
-        LOGGER.debug("Cookies: {}", values);
+        LOGGER.debug("Cookies: {}",values);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class CookieJar implements RequestInterceptor, ResponseInterceptor {
                 var split1 = header.split(";")[0];
                 var split2 = split1.split("=",2);
                 if (split2.length > 1) {
-                    values.put(split2[0], split2[1]);
+                    values.put(split2[0],split2[1]);
                 }
             });
         }

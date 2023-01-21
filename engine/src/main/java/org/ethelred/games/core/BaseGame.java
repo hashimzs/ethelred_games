@@ -83,8 +83,8 @@ public abstract class BaseGame<P extends GamePlayer> implements Game
             throw new InvalidActionException("Player is not in this game");
         }
         readyPlayers.put(player, ReadyState.READY);
-        if (readyPlayers.values().stream().allMatch(x -> x == ReadyState.READY) &&
-                players.size() >= minPlayers())
+        if (readyPlayers.values().stream().allMatch(x -> x == ReadyState.READY)
+                && players.size() >= minPlayers())
         {
             start();
             status = Status.IN_PROGRESS;
@@ -172,7 +172,7 @@ public abstract class BaseGame<P extends GamePlayer> implements Game
         playerOrder.forEach(p -> playerConsumer.accept(p, players.get(p)));
     }
 
-    /* package */Map<String,Object> gamePublicProperties(Player p) {
+    /* package */Map<String, Object> gamePublicProperties(Player p) {
 
             var r = new HashMap<String, Object>();
             if (status == Status.PRESTART) {

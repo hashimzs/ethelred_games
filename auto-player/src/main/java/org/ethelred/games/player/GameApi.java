@@ -14,7 +14,7 @@ public interface GameApi extends BotApi {
     void setName(String name);
 
     @RequestLine("POST {path}")
-    GameResponse action(@Param("path") String path, Action action);
+    GameResponse action(@Param("path") String path,Action action);
     @RequestLine("GET {path}")
     GameResponse poll(@Param("path") String path);
 }

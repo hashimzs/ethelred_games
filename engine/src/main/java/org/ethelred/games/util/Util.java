@@ -10,10 +10,10 @@ import java.util.TreeSet;
 import java.util.function.Predicate;
 
 public final class Util {
-    private Util(){}
+    private Util() {}
 
-    public static <K,V> Map<K, V> merge(Map<K, V> a, Map<K, V> b) {
-        var r = new HashMap<K,V>();
+    public static <K, V> Map<K, V> merge(Map<K, V> a, Map<K, V> b) {
+        var r = new HashMap<K, V>();
         r.putAll(a);
         r.putAll(b);
         return Map.copyOf(r);
