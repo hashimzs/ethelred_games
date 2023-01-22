@@ -34,3 +34,10 @@ body {
 .y {
     background-color: yellow;
 }
+fieldset {
+    border: thin solid black;
+    border-radius: 0.5rem;
+}
+footer {
+    padding-top: 0.5rem;
+}

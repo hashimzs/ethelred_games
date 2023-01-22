@@ -47,7 +47,7 @@
     }
 </script>
 
-<div>
+<div class="log">
 {#each real as row}
     <div>
         {row.playerName} {translateAction(row.actionName)} {@html translateValue(row.actionName, row.actionValue)}
@@ -57,4 +57,9 @@
 </div>
 
 <style>
+    .log {
+        border-top: solid thin black;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+    }
 </style>

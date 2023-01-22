@@ -22,9 +22,10 @@
 	const signal = controller.signal;
 
 	function scheduleUpdate() {
-			updateTimeout = setTimeout(() => {
-				invalidateAll();
-			}, 1000);
+		cancelUpdate();
+		updateTimeout = setTimeout(() => {
+			invalidateAll();
+		}, 1000);
 	}
 
 	function cancelUpdate() {
@@ -103,9 +104,9 @@
 	<div><button on:click={() => action('addBot')}>Add Bot</button></div>
 	{/if}
 	{#if data.playerView.players.length > 2 && !pregame}
-	<div>
+	<h3>
 		Direction <Fa icon={data.playerView.reversedDirection ? faArrowUp : faArrowDown} />
-	</div>
+	</h3>
 	{/if}
 	<GameLog log={data.playerView.log}/> 
 </div>
@@ -113,15 +114,22 @@
 {#if self.hand}
 <div class="right-pane fl col" class:turn="{hasAction('drawCard')}">
 <div class="table fl">
+	<fieldset>
+		<legend>Match</legend>
 	<NuoCard card={data.playerView.current} highlight={false} wildColor={data.playerView.wildColor}/>
+</fieldset>
+<fieldset>
+	<legend class="right">Draw</legend>
 	<CardBack on:drawCard={handleAction} highlight={hasAction('drawCard')}/>
+</fieldset>
 </div>
 
-<div class="hand fl">
+<fieldset class="hand fl">
+	<legend>Hand</legend>
 	{#each self.hand as card}
 		<NuoCard {card} on:playCard={handleAction} highlight={hasAction('playCard', card)}/>
 	{/each}
-</div>
+</fieldset>
 {#if showPlayDrawn}
 <div class="overlay turn">
 	Drew card <NuoCard card={data.playerView.drewCard} highlight={true} on:playCard={evt => action('playDrawn', true)}/>
@@ -140,6 +148,8 @@
 </div>
 {/if}
 </div>
+{:else}
+<div class="right-pane"></div>
 {/if}
 
 {#if showPlayAgain}
@@ -153,7 +163,7 @@
 
 </div>
 
-<strong>{data.playerView.shortCode}</strong>
+<footer><em>Players can use code <strong>{data.playerView.shortCode}</strong> to rejoin.</em></footer>
 <style>
 .hand {
 	flex-wrap: wrap;
@@ -200,5 +210,9 @@ ul {
 }
 .chooseColor span {
 	grid-column: 1 / 5;
+}
+
+legend.right {
+	margin-left: auto;
 }
 </style>
