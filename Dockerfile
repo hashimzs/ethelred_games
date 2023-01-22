@@ -5,7 +5,7 @@ FROM eclipse-temurin:17.0.5_8-jdk-alpine as jre-build
 # Create a custom Java runtime
 RUN apk add --no-cache binutils && \
     $JAVA_HOME/bin/jlink \
-         --add-modules java.base,java.desktop,java.xml \
+         --add-modules java.base,java.desktop,java.xml,java.logging \
          --strip-debug \
          --no-man-pages \
          --no-header-files \
