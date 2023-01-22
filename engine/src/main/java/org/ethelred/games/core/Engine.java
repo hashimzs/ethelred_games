@@ -23,4 +23,6 @@ public interface Engine
     PlayerView playerView(Channel channel);
 
     void playerName(long playerId, String name);
+
+    void addBot(Player player, String shortCode);
 }

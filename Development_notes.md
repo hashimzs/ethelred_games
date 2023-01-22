@@ -2,16 +2,20 @@
 
 ## Frontend / client
 
-* Node 14.whatever
-* [Yarn 2](https://yarnpkg.com/getting-started/install)
-* [Vue.js 3](https://v3.vuejs.org/guide/introduction.html)
-* [Vite 2 with vue-ts template](https://vitejs.dev/guide/#scaffolding-your-first-vite-project)
+* Node 18
+* pnpm
+* sveltekit
 
 ## Backend / server
 
-* JDK 16 (living on the edge)
+* JDK 17 
 * [Javalin](https://javalin.io/)
-* Redis
+* ~~Redis~~
+
+## Games
+
+* [UNO rules](https://service.mattel.com/instruction_sheets/42001pr.pdf)
+
 
 ## Deployment
 

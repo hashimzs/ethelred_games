@@ -4,12 +4,18 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ethelred.games.bot.BotAdapter;
+import org.ethelred.games.bot.RandomPlayer;
 
+import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.LongSupplier;
@@ -23,14 +29,21 @@ public class InMemoryEngineImpl implements Engine
 
     private final Cache<Long, Game> gameMap = Caffeine.newBuilder().expireAfterAccess(30, TimeUnit.MINUTES).build();
     private final Cache<String, Long> shortCodes = Caffeine.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).build();
+
+    private final Executor botRunner = Executors.newWorkStealingPool();
+    private final Map<Long, RandomPlayer> botPlayers = new ConcurrentSkipListMap<>();
     private final PlayerManager playerManager;
+    private final LongSupplier idSupplier;
     private final Supplier<String> shortCodeSupplier;
 
     private BiConsumer<Channel, PlayerView> messageSender;
 
-    public InMemoryEngineImpl(PlayerManager playerManager, Supplier<String> shortCodeSupplier)
+    private Random random = new SecureRandom();
+
+    public InMemoryEngineImpl(PlayerManager playerManager, LongSupplier idSupplier, Supplier<String> shortCodeSupplier)
     {
         this.playerManager = playerManager;
+        this.idSupplier = idSupplier;
         this.shortCodeSupplier = shortCodeSupplier;
     }
 
@@ -91,8 +104,13 @@ public class InMemoryEngineImpl implements Engine
     public void registerGame(GameDefinition<?> gameDefinition)
     {
         gameDefinitionMap.put(gameDefinition.gameType(), gameDefinition);
-        //noinspection unchecked
-        gameDefinition.actionPerformers().forEach(ap -> actionPerformerMap.put(ap.actionName(), (ActionPerformer<? super Game>) ap));
+        gameDefinition.actionPerformers().forEach(ap -> {
+            //noinspection unchecked
+            actionPerformerMap.put(ap.actionName(), (ActionPerformer<? super Game>) ap);
+            if (ap instanceof EngineAccess engineAccess) {
+                engineAccess.engine(this);
+            }
+        });
     }
 
     @Override
@@ -121,11 +139,23 @@ public class InMemoryEngineImpl implements Engine
     }
 
     private MessagePlayerView handlePlayAgain(Channel channel, Game game, Collection<Player> players) {
+        // don't restart if the only players are bots
+        if (players.stream().allMatch(player -> botPlayers.containsKey(player.id()))) {
+            players.forEach(this::stopBot);
+            return new MessagePlayerView(null, game.playerView(playerManager.get(channel.playerId())));
+        }
         var newGame = createInternal(channel.gameType(), game.id());
         players.forEach(newGame::addPlayer);
         players.forEach(newGame::playerReady);
         players.forEach(p -> messageSender.accept(new Channel(game.id(), game.type(), p.id()), newGame.playerView(p)));
         return new MessagePlayerView(null, newGame.playerView(playerManager.get(channel.playerId())));
+    }
+
+    private void stopBot(Player player) {
+        var randomPlayer = botPlayers.remove(player.id());
+        if (randomPlayer != null) {
+            randomPlayer.stop();
+        }
     }
 
     @Override
@@ -141,4 +171,15 @@ public class InMemoryEngineImpl implements Engine
         playerManager.setName(playerId, name);
     }
 
+    @Override
+    public void addBot(Player requester, String shortCode) {
+        if (botPlayers.containsKey(requester.id())) {
+            // ignore, it's another bot
+            return;
+        }
+        var playerId = idSupplier.getAsLong();
+        var bot = new RandomPlayer(random, shortCode, new BotAdapter(playerId, this, playerManager));
+        botPlayers.put(playerId, bot);
+        botRunner.execute(bot);
+    }
 }

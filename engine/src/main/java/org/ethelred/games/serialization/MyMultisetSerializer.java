@@ -16,7 +16,7 @@ public class MyMultisetSerializer extends StdSerializer<Multiset> {
     @Override
     public void serialize(Multiset value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartArray();
-        for (Object o: value) {
+        for (Object o : value) {
             gen.writeObject(o);
         }
         gen.writeEndArray();

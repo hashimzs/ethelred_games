@@ -3,7 +3,6 @@ package org.ethelred.games.core;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class InMemoryPlayerManagerImpl implements PlayerManager

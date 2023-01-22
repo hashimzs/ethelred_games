@@ -1,10 +1,21 @@
 <script lang="ts">
+	import { getDisplay, type Colour } from "./NuoColour";
+
+
     type Log = {playerName:string, actionName:string, actionValue:string}
     export let log:Log[] = [];
 
     $: real = log ? log.reverse().filter(row => row.actionName != 'playDrawn') : [];
 
-    const mapping = {
+    interface ActionMapping {
+        text: string,
+        value: (v:any) => string
+    }
+    interface LogMapping {
+        [index:string]: ActionMapping
+    }
+
+    const mapping: LogMapping = {
         playCard: {
             text: 'played card',
             value: (v:string) => `<img src="/nuo/card/${v}.png" height=37>`
@@ -15,7 +26,7 @@
         },
         chooseColor: {
             text: 'chose colour',
-            value: (v) => 'TODO'
+            value: (v:Colour) => `<span class="${v}">${getDisplay(v)}</span>`
         },
         drawCard: {
             text: 'drew a card',
@@ -27,7 +38,7 @@
         return mapping[actionName]?.text || actionName;
     }
 
-    function translateValue(actionName, actionValue) {
+    function translateValue(actionName: string, actionValue: string) {
         let m = mapping[actionName];
         if (m) {
             return m.value(actionValue);
@@ -36,7 +47,7 @@
     }
 </script>
 
-<div>
+<div class="log">
 {#each real as row}
     <div>
         {row.playerName} {translateAction(row.actionName)} {@html translateValue(row.actionName, row.actionValue)}
@@ -46,4 +57,9 @@
 </div>
 
 <style>
+    .log {
+        border-top: solid thin black;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+    }
 </style>

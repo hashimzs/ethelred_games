@@ -33,7 +33,7 @@ public class BasePlayerView<P extends GamePlayer> implements PlayerView
 
     private final String shortCode;
     @JsonProperty
-    private final Set<ActionDefinition<?>> availableActions = new TreeSet<>();
+    private final Set<ActionDefinition> availableActions = new TreeSet<>();
 
     @JsonProperty("players")
     private final List<OtherPlayer> otherPlayers = new ArrayList<>();
@@ -53,7 +53,7 @@ public class BasePlayerView<P extends GamePlayer> implements PlayerView
     }
 
     @Override
-    public Set<ActionDefinition<?>> availableActions()
+    public Set<ActionDefinition> availableActions()
     {
         return availableActions;
     }

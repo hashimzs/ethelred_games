@@ -82,6 +82,7 @@ class ServerTest extends Specification {
 {"path":"/api/nuo/1002", 
     "playerView":{
         "availableActions":[
+        {"name":"addBot","possibleArguments":[]},
         {"name":"playerReady","possibleArguments":[]}
         ],
         "players":[
@@ -109,6 +110,7 @@ class ServerTest extends Specification {
 {"path":"/api/nuo/1002", 
     "playerView":{
         "availableActions":[
+        {"name":"addBot","possibleArguments":[]},
         {"name":"playerReady","possibleArguments":[]}
         ],
         "players":[

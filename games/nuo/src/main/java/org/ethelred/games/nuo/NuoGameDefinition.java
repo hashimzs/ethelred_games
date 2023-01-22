@@ -1,15 +1,13 @@
 package org.ethelred.games.nuo;
 
 import org.ethelred.games.core.ActionPerformer;
-import org.ethelred.games.core.GameDefinition;
-import org.ethelred.games.core.PlayAgainPerformer;
-import org.ethelred.games.core.PlayerReadyPerformer;
+import org.ethelred.games.core.BaseGameDefinition;
+import org.ethelred.games.util.Util;
 
 import java.security.SecureRandom;
-import java.util.Random;
 import java.util.Set;
 
-public class NuoGameDefinition implements GameDefinition<NuoGame>
+public class NuoGameDefinition extends BaseGameDefinition<NuoGame>
 {
 
     public static final String NUO = "nuo";
@@ -28,13 +26,14 @@ public class NuoGameDefinition implements GameDefinition<NuoGame>
     public Set<ActionPerformer<? super NuoGame>> actionPerformers()
     {
         var playCard = new PlayCardPerformer();
-        return Set.of(
-                new PlayerReadyPerformer(),
+        return Util.merge(
+                Set.of(
                 new ChooseColorPerformer(),
                 new DrawCardPerformer(),
                 playCard,
-                new PlayDrawnPerformer(playCard),
-                new PlayAgainPerformer()
+                new PlayDrawnPerformer(playCard)
+                ),
+                super.actionPerformers()
         );
     }
 

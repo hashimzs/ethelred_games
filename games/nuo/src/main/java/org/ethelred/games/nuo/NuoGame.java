@@ -127,16 +127,16 @@ public class NuoGame extends BaseGame<NuoPlayer>
     }
 
     @Override
-    public Set<ActionDefinition<?>> actionsFor(Player player) {
+    public Set<ActionDefinition> actionsFor(Player player) {
         if (status() == Status.IN_PROGRESS && player.same(currentPlayer())) {
             return Util.merge(getPlayerTurnActions(gamePlayer(player)), super.actionsFor(player));
         }
         return super.actionsFor(player);
     }
 
-    private Set<ActionDefinition<?>> getPlayerTurnActions(NuoPlayer nuoPlayer)
+    private Set<ActionDefinition> getPlayerTurnActions(NuoPlayer nuoPlayer)
     {
-        Set<ActionDefinition<?>> result = new TreeSet<>();
+        Set<ActionDefinition> result = new TreeSet<>();
         switch (playState)
         {
             case NORMAL -> {
@@ -144,14 +144,15 @@ public class NuoGame extends BaseGame<NuoPlayer>
                         .elementSet()
                         .stream()
                         .filter(card -> PlayCardPerformer.isValidPlay(this, nuoPlayer, card))
+                        .map(Card::shortCode)
                                 .collect(Collectors.toSet());
                 if (!validCards.isEmpty()) {
-                    result.add(new ActionDefinition<>(PlayCardPerformer.NAME, validCards));
+                    result.add(new ActionDefinition(PlayCardPerformer.NAME, validCards));
                 }
-                result.add(new ActionDefinition<>(DrawCardPerformer.NAME));
+                result.add(new ActionDefinition(DrawCardPerformer.NAME));
             }
-            case CHOOSE_COLOR -> result.add(new ActionDefinition<>(ChooseColorPerformer.NAME, Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW));
-            case PLAY_DRAWN -> result.add(new ActionDefinition<>(PlayDrawnPerformer.NAME, true, false));
+            case CHOOSE_COLOR -> result.add(new ActionDefinition(ChooseColorPerformer.NAME, Color.RED.shortCode(), Color.GREEN.shortCode(), Color.BLUE.shortCode(), Color.YELLOW.shortCode()));
+            case PLAY_DRAWN -> result.add(new ActionDefinition(PlayDrawnPerformer.NAME, "true", "false"));
         }
         return result;
     }

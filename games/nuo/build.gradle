@@ -5,4 +5,5 @@ plugins {
 dependencies {
     implementation(project(":engine"))
     implementation libs.bundles.jackson
+    implementation 'org.ethelred:ethelred_util:0.4'
 }

@@ -3,10 +3,9 @@ package org.ethelred.games.player;
 import feign.Headers;
 import feign.Param;
 import feign.RequestLine;
+import org.ethelred.games.bot.BotApi;
 
-import java.util.List;
-
-public interface GameApi {
+public interface GameApi extends BotApi {
     @RequestLine("PUT /api/join/{shortCode}")
     GameResponse joinGame(@Param("shortCode") String shortCode);
 
@@ -15,14 +14,9 @@ public interface GameApi {
     void setName(String name);
 
     @RequestLine("POST {path}")
-    GameResponse action(@Param("path") String path, Action action);
+    GameResponse action(@Param("path") String path,Action action);
     @RequestLine("GET {path}")
     GameResponse poll(@Param("path") String path);
-
-    record GameResponse(String path, PlayerView playerView){}
-    record PlayerView(String status, List<ActionDefinition> availableActions){}
-    record ActionDefinition(String name, List<String> possibleArguments){}
-    record Action(String name, String value){}
 }
 
 /*
