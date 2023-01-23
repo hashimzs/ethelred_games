@@ -37,7 +37,13 @@ public class RandomPlayer implements Runnable {
         this.random = random;
         this.shortCode = shortCode;
         this.api = api;
-        this.name = faker.harryPotter().character();
+        this.name = getName();
+    }
+
+    private String getName() {
+        var name = faker.harryPotter().character();
+        var first = name.split(" ")[0];
+        return first + " [Bot]";
     }
 
     @Override
