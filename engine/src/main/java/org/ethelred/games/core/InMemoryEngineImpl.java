@@ -2,6 +2,7 @@ package org.ethelred.games.core;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Scheduler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ethelred.games.bot.BotAdapter;
@@ -27,8 +28,14 @@ public class InMemoryEngineImpl implements Engine
     private final Map<String, GameDefinition<?>> gameDefinitionMap = new ConcurrentSkipListMap<>();
     private final Map<String, ActionPerformer<? super Game>> actionPerformerMap = new ConcurrentSkipListMap<>();
 
-    private final Cache<Long, Game> gameMap = Caffeine.newBuilder().expireAfterAccess(30, TimeUnit.MINUTES).build();
-    private final Cache<String, Long> shortCodes = Caffeine.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).build();
+    private final Cache<Long, Game> gameMap = Caffeine.newBuilder()
+            .expireAfterWrite(30, TimeUnit.MINUTES)
+            .scheduler(Scheduler.systemScheduler())
+            .build();
+    private final Cache<String, Long> shortCodes = Caffeine.newBuilder()
+            .expireAfterWrite(30, TimeUnit.MINUTES)
+            .scheduler(Scheduler.systemScheduler())
+            .build();
 
     private final Executor botRunner = Executors.newWorkStealingPool();
     private final Map<Long, RandomPlayer> botPlayers = new ConcurrentSkipListMap<>();
@@ -38,7 +45,7 @@ public class InMemoryEngineImpl implements Engine
 
     private BiConsumer<Channel, PlayerView> messageSender;
 
-    private Random random = new SecureRandom();
+    private final Random random = new SecureRandom();
 
     public InMemoryEngineImpl(PlayerManager playerManager, LongSupplier idSupplier, Supplier<String> shortCodeSupplier)
     {
