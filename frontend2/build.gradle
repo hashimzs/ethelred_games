@@ -1,5 +1,10 @@
 plugins {
-    id 'com.github.node-gradle.node' version '3.5.1'
+    id 'com.github.node-gradle.node' version '7.0.1'
+}
+
+node {
+    download = true
+    version = "18.16.1"
 }
 
 tasks.register('build', PnpmTask) {

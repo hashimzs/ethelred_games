@@ -95,15 +95,15 @@ class TestBaseGame extends Specification {
     }
 }
 
-class SimpleGame extends BaseGame<Object> {
+class SimpleGame extends BaseGame<SimplePlayer> {
 
     SimpleGame(long id) {
         super(id)
     }
 
     @Override
-    protected Object createGamePlayer() {
-        return new Object()
+    protected SimplePlayer createGamePlayer() {
+        return new SimplePlayer()
     }
 
     @Override
@@ -139,5 +139,12 @@ class SimpleGame extends BaseGame<Object> {
     @Override
     Map<Long, PlayerView> playerViews() {
         throw new UnsupportedOperationException()
+    }
+}
+
+class SimplePlayer implements GamePlayer {
+    @Override
+    Map<String, Object> publicProperties() {
+        return [:]
     }
 }
