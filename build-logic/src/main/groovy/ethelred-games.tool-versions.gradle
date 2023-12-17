@@ -1,0 +1,22 @@
+def toolVersions = [:]
+
+def toolVersionsFile
+def p = project
+
+while (!toolVersionsFile && p) {
+    def f = p.file('.tool-versions')
+    if (f.exists()) {
+        toolVersionsFile = f
+    }
+    p = p.parent
+}
+
+if (toolVersionsFile) {
+    toolVersionsFile.eachLine { line ->
+        def (tool, version) = line.split(" ")
+        toolVersions[tool] = version
+    }
+}
+
+project.ext.toolVersions = toolVersions
+println toolVersions
