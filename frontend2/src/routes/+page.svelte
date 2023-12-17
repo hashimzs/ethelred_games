@@ -27,14 +27,14 @@
 
 <form method="POST" on:submit|preventDefault={join}>
     <label for="shortCode">Join a game: enter code</label>
-    <input id="shortCode" type="text" name="shortCode" minlength="3" bind:value={shortCode}>
-    <input type="submit" value="Join">
+    <input id="shortCode" type="text" name="shortCode" minlength="3" class="input input-bordered" bind:value={shortCode}>
+    <input class="btn" type="submit" value="Join">
 </form>
     {#each data.gameTypes as gameType}
         <h2>{gameType}</h2>    
         <form method="POST" on:submit|preventDefault={() => create(gameType)}>
             <input name="gameType" type="hidden" value={gameType}>
             <label for="btn">Create a game</label>
-            <input id="btn" type="submit" value="Create">
+            <input id="btn" class="btn" type="submit" value="Create">
         </form>
     {/each}

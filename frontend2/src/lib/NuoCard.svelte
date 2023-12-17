@@ -18,7 +18,7 @@
         }
     }
 </script>
-<div class="card" class:highlight on:click={interact} on:keypress={interact}>
+<div class="nuocard" class:highlight on:click={interact} on:keypress={interact}>
     <img src={`/nuo/card/${card}.png`} alt={card}>
     {#if wildColor}
     <div class={`wildColor ${wildColor}`}>{getDisplay(wildColor)}</div>
@@ -26,20 +26,12 @@
 </div>
 
 <style>
-    .card {
+    .nuocard {
         position: relative;
-    }
-    img {
-        border: thick solid rgba(0, 0, 0, 0);
-        border-radius: 1rem;
-    }
-    .highlight img {
-        border: thick dashed black;
-        cursor: pointer;
     }
     .wildColor {
         text-align: center;
-        padding: 0.5em;
+        padding: 0.2em;
         font-weight: bold;
         font-size: 1.2rem;
         position: absolute;

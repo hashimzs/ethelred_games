@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { createEventDispatcher, tick } from "svelte";
 
-
     let show = false;
     export let name:string;
-
     const dispatch = createEventDispatcher();
 
+    let dialog: HTMLDialogElement;
     let textRef: HTMLInputElement;
 
     function updateName() {
@@ -22,6 +21,7 @@
 
     async function open() {
         show = true;
+        dialog.showModal();
         dispatch('open');
         await tick();
         textRef.focus();
@@ -30,6 +30,7 @@
 
     function close() {
         show = false;
+        dialog.close();
         dispatch('close');
     }
 
@@ -41,22 +42,18 @@
 </script>
 <svelte:window on:keydown={handleEscape} on:click={close}/>
 <div class="rel">
-{#if show}
-<div class="modal">
+<dialog bind:this={dialog} class="modal">
     <!-- svelte-ignore a11y-autofocus -->
-    <input type="text" bind:this={textRef} bind:value={name} on:change={updateName} on:click|stopPropagation>
-    <button on:click|stopPropagation={updateName}>Update Name</button>
-</div>
-{/if}
-<button on:click|stopPropagation={open} disabled={show}>Change Name</button>
+    <div class="modal-box">
+    <input class="input input-bordered" type="text" bind:this={textRef} bind:value={name} on:change={updateName} on:click|stopPropagation>
+    <button class="btn" on:click|stopPropagation={updateName}>Update Name</button>
+    </div>
+</dialog>
+<button class="btn" on:click|stopPropagation={open} disabled={show}>Change Name</button>
 </div>
 
 <style>
     .rel {
         position: relative;
-    }
-    .modal {
-        position: absolute;
-        z-index: 10;
     }
 </style>
