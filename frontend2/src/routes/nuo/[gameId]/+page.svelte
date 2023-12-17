@@ -86,12 +86,12 @@
 <!-- <tt>{JSON.stringify(data)}</tt> -->
 {#if pregame}
 <PlayerName name={self.name} on:open={cancelUpdate} on:close={scheduleUpdate}/>
-	<p>Invite players to join with code <strong>{data.playerView.shortCode}</strong><button on:click={copyCode}><Fa icon={faCopy}/> Copy</button> {copied}</p>
+	<p>Invite players to join with code <strong>{data.playerView.shortCode}</strong> <button class="btn" on:click={copyCode}><Fa icon={faCopy}/> Copy</button> {copied}</p>
 {/if}
-<div class="container fl">
-<div class="left-pane">
+<div class="relative flex justify-center">
+<div class="flex-[0_0_30%] max-w-[30%]">
 	<h3>Players</h3>
-	<ul class="players">
+	<ul class="grid grid-cols-[1.4rem_1.4rem_8rem_1fr] gap-0.5">
 		{#each data.playerView.players as player}
 				{#if pregame}
 					<PregamePlayer {player} showButton={player.self && hasAction('playerReady')} on:click|once={() => action('playerReady')}/>
@@ -101,7 +101,7 @@
 		{/each}
 	</ul>
 	{#if showAddBot}
-	<div><button on:click={() => action('addBot')}>Add Bot</button></div>
+	<div><button class="btn" on:click={() => action('addBot')}>Add Bot</button></div>
 	{/if}
 	{#if data.playerView.players.length > 2 && !pregame}
 	<h3>
@@ -112,19 +112,19 @@
 </div>
 
 {#if self.hand}
-<div class="right-pane fl col" class:turn="{hasAction('drawCard')}">
-<div class="table fl">
+<div class="flex relative flex-col justify-start ml-2 flex-1" class:turn="{hasAction('drawCard')}">
+<div class="flex justify-center gap-1">
 	<fieldset>
 		<legend>Match</legend>
 	<NuoCard card={data.playerView.current} highlight={false} wildColor={data.playerView.wildColor}/>
 </fieldset>
 <fieldset>
-	<legend class="right">Draw</legend>
+	<legend class="ml-auto">Draw</legend>
 	<CardBack on:drawCard={handleAction} highlight={hasAction('drawCard')}/>
 </fieldset>
 </div>
 
-<fieldset class="hand fl">
+<fieldset class="pt-2 flex-wrap flex justify-center">
 	<legend>Hand</legend>
 	{#each self.hand as card}
 		<NuoCard {card} on:playCard={handleAction} highlight={hasAction('playCard', card)}/>
@@ -134,8 +134,8 @@
 <div class="overlay turn">
 	Drew card <NuoCard card={data.playerView.drewCard} highlight={true} on:playCard={evt => action('playDrawn', true)}/>
 	Play it now?
-	<button on:click={() => action('playDrawn', true)}>Yes</button>
-	<button on:click={() => action('playDrawn', false)}>No</button>
+	<button class="btn" on:click={() => action('playDrawn', true)}>Yes</button>
+	<button class="btn" on:click={() => action('playDrawn', false)}>No</button>
 </div>
 {/if}
 {#if showChooseColor}
@@ -149,15 +149,15 @@
 {/if}
 </div>
 {:else}
-<div class="right-pane"></div>
+<div class="flex relative flex-col justify-start ml-2 flex-1"></div>
 {/if}
 
 {#if showPlayAgain}
 <div class="overlay">
 	<div>{winner} is the winner!</div>
 	<div>Play again?</div>
-	<button on:click={() => action('playAgain', true)}>Yes</button>
-	<button on:click={() => action('playAgain', false)}>No</button>
+	<button class="btn" on:click={() => action('playAgain', true)}>Yes</button>
+	<button class="btn" on:click={() => action('playAgain', false)}>No</button>
 </div>
 {/if}
 
@@ -165,43 +165,12 @@
 
 <footer><em>Players can use code <strong>{data.playerView.shortCode}</strong> to rejoin.</em></footer>
 <style>
-.hand {
-	flex-wrap: wrap;
-	padding-top: 0.5rem;
-}
-.left-pane {
-	flex: 0 0 30%;
-	max-width: 30%;
-}
-.right-pane, .container {
-	position: relative;
-}
-.right-pane {
-	margin-left: 0.5rem;
-	flex: 1;
-}
-.overlay {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform:translate(-50%, -50%);
-    z-index: 10;
-	background-color: white;
-	box-shadow: 0px 0px 20px 20px rgba(0,0,0, 0.3);
-	padding: 2rem;
-	margin: 2rem;
-}
 h3 {
 	text-align: center;
 	margin: 0.4em;
 }
 ul {
 	padding: 0;
-}
-.players {
-	display: grid;
-	grid-template-columns: 1.4rem 1.4rem 8rem 1fr;
-	gap: 2px;
 }
 .chooseColor {
 	display: grid;
@@ -210,9 +179,5 @@ ul {
 }
 .chooseColor span {
 	grid-column: 1 / 5;
-}
-
-legend.right {
-	margin-left: auto;
 }
 </style>

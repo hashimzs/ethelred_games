@@ -21,15 +21,8 @@
 <div>
     {player.name}
 </div>
-<div class="mini fl">
+<div class="flex justify-start min-h-[37px]">
     {#each mini as minicard}
         <img src="/nuo/card/mini.png" alt="card">
     {/each}
 </div>
-
-<style>
-    .mini {
-        justify-content: flex-start;
-        min-height: 37px;
-    }
-</style>

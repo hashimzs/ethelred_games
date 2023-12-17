@@ -6,7 +6,7 @@
 </script>
     <div class="name">{player.name}</div>
     <div class="ready">{#if showButton}
-    <button on:click>Ready</button>
+    <button class="btn" on:click>Ready</button>
     {:else if player.ready}
     <Fa icon={faCheck} />
     {/if}

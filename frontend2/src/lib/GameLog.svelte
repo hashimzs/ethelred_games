@@ -18,7 +18,7 @@
     const mapping: LogMapping = {
         playCard: {
             text: 'played card',
-            value: (v:string) => `<img src="/nuo/card/${v}.png" height=37>`
+            value: (v:string) => `<img src="/nuo/card/${v}.png" class="h-[37px] inline">`
         },
         playerReady: {
             text: 'is ready to play',
@@ -30,6 +30,10 @@
         },
         drawCard: {
             text: 'drew a card',
+            value: () => ''
+        },
+        addBot: {
+            text: 'requested a bot be added',
             value: () => ''
         }
     }

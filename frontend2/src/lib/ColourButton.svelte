@@ -12,11 +12,4 @@
         dispatch('chooseColor', colour);
     }
 </script>
-<button class={colour} on:click={handle}>{display}</button>
-
-<style>
-    button {
-        font-size: 1.2rem;
-        padding: 0.5rem;
-    }
-</style>
+<button class={`${colour} btn text-lg p-2`} on:click={handle}>{display}</button>
