@@ -13,7 +13,12 @@
     <a href="/"><Fa icon={faHome}/> Home</a>
     </nav>
 <h1 class="navbar-center">{title}</h1>
-<nav class="navbar-end"></nav>
+<nav class="navbar-end">
+    <!-- pseudo-slot -->
+    {#if $page.data.nav}
+        <svelte:component this={$page.data.nav} />
+    {/if}
+</nav>
 </div>
 <slot></slot>
 </div>

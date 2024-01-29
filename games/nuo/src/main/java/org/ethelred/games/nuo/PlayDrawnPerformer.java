@@ -4,6 +4,7 @@ import org.ethelred.games.core.Action;
 import org.ethelred.games.core.ActionPerformer;
 import org.ethelred.games.core.Game;
 import org.ethelred.games.core.Player;
+import org.ethelred.games.core.StringAction;
 
 public class PlayDrawnPerformer implements ActionPerformer<NuoGame>
 {
@@ -38,6 +39,8 @@ public class PlayDrawnPerformer implements ActionPerformer<NuoGame>
             // play card
             //noinspection ConstantConditions
             playCardPerformer.playCard(game, player, np.drewCard.shortCode());
+            // inject play card so log is correct
+            game.log(player, new StringAction(PlayCardPerformer.NAME, np.drewCard.shortCode()));
         } else {
             game.nextPlayer();
         }

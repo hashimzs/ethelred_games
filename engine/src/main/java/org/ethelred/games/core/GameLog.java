@@ -7,6 +7,7 @@ import java.util.List;
 
 public class GameLog {
     private final int maxSize;
+    private long index;
 
     @JsonValue
     private final List<LogEntry> q;
@@ -15,12 +16,12 @@ public class GameLog {
         maxSize = size;
         q = new ArrayList<>(size);
     }
-    record LogEntry(String playerName, String actionName, String actionValue){}
+    record LogEntry(long index, String playerName, String actionName, String actionValue){}
 
     void push(Player player, Action action) {
         while (q.size() >= maxSize) {
             q.remove(0);
         }
-        q.add(new LogEntry(player.name(), action.name(), action.argumentAsString()));
+        q.add(new LogEntry(index++, player.name(), action.name(), action.argumentAsString()));
     }
 }

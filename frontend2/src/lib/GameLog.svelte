@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { getDisplay, type Colour } from "./NuoColour";
+    	import type { Log } from "./GameLog";
 
 
-    type Log = {playerName:string, actionName:string, actionValue:string}
-    export let log:Log[] = [];
+    export let log:Log = [];
 
     $: real = log ? log.reverse().filter(row => row.actionName != 'playDrawn') : [];
 
