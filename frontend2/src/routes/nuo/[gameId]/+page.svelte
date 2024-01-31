@@ -71,7 +71,7 @@
 	}
 
 	function handleAction(event: CustomEvent) {
-		console.log("handleAction(%s, %s)", event.type, event.detail);
+		// console.log("handleAction(%s, %s)", event.type, event.detail);
 		if (hasAction(event.type, event.detail)) {
 			action(event.type, event.detail);
 		}
