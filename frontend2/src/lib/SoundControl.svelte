@@ -25,6 +25,10 @@
                             break;
             }
         }
+        if (latestEvent && latestEvent.index == 0 && lastIndex > 0) {
+            // workaround for "play again"
+            lastIndex = 0;
+        }
     }
 
     afterUpdate(checkPlaySound);
