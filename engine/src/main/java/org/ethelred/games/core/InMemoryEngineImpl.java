@@ -145,6 +145,7 @@ public class InMemoryEngineImpl implements Engine
             return new MessagePlayerView(null, game.playerView(playerManager.get(channel.playerId())));
         }
         var newGame = createInternal(channel.gameType(), game.id());
+        newGame.playAgainCount(game.playAgainCount() + 1);
         players.forEach(newGame::addPlayer);
         players.forEach(newGame::playerReady);
         players.forEach(p -> messageSender.accept(new Channel(game.id(), game.type(), p.id()), newGame.playerView(p)));

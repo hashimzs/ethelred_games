@@ -15,6 +15,7 @@ public interface Game extends Identifiable<Game>
 
     void log(Player player, Action action);
 
+
     enum Status
     {
         PRESTART, IN_PROGRESS, ENDED
@@ -33,4 +34,7 @@ public interface Game extends Identifiable<Game>
     Player currentPlayer();
     Player nextPlayer();
 
+    int playAgainCount();
+
+    void playAgainCount(int i);
 }

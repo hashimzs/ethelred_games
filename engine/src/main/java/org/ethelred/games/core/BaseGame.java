@@ -16,6 +16,8 @@ public abstract class BaseGame<P extends GamePlayer> implements Game
     private String shortCode;
     private volatile Status status = Status.PRESTART;
 
+    private int playAgainCount = 0;
+
     enum ReadyState {
         PRESTART,
         READY,
@@ -86,6 +88,7 @@ public abstract class BaseGame<P extends GamePlayer> implements Game
         if (readyPlayers.values().stream().allMatch(x -> x == ReadyState.READY)
                 && players.size() >= minPlayers())
         {
+            currentPlayerIndex = playAgainCount % playerCount();
             start();
             status = Status.IN_PROGRESS;
         }
@@ -223,5 +226,15 @@ public abstract class BaseGame<P extends GamePlayer> implements Game
     @Override
     public void log(Player player, Action action) {
         log.push(player, action);
+    }
+
+    @Override
+    public int playAgainCount() {
+        return playAgainCount;
+    }
+
+    @Override
+    public void playAgainCount(int i) {
+        playAgainCount = i;
     }
 }
