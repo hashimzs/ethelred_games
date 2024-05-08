@@ -15,7 +15,7 @@ public class NonApiWrapper extends HandlerWrapper {
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        LOGGER.info("Wrapper.handle {}", target);
+        LOGGER.debug("Wrapper.handle {}", target);
         if (target != null && target.startsWith("/api/")) {
             baseRequest.setHandled(false);
         } else {

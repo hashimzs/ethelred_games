@@ -10,6 +10,7 @@ import io.javalin.websocket.WsContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.proxy.ProxyServlet;
+import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -107,6 +108,7 @@ public class Main implements Runnable
         holder.setInitParameter("proxyTo", "http://localhost:3000");
         wrapper.setHandler(context);
         server.setHandler(new HandlerCollection(wrapper));
+        server.setRequestLog(new CustomRequestLog());
         return server;
     }
 
