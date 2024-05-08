@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.proxy.ProxyServlet;
 import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.Slf4jRequestLogWriter;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.ethelred.games.core.Action;
@@ -108,7 +109,7 @@ public class Main implements Runnable
         holder.setInitParameter("proxyTo", "http://localhost:3000");
         wrapper.setHandler(context);
         server.setHandler(new HandlerCollection(wrapper));
-        server.setRequestLog(new CustomRequestLog());
+        server.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.EXTENDED_NCSA_FORMAT + " \"%{X-Forwarded-For}i\""));
         return server;
     }
 
