@@ -152,7 +152,7 @@ public class Main implements Runnable
                     }
 
                     if(name.length() > 20){
-                        ctx.json("Bad request: Player name is too long.").status(400)
+                        ctx.json("Bad request: Player name is too long.").status(400);
                     }
 
                     engine.playerName(getPlayerId(ctx), name);
